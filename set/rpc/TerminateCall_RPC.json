@@ -1,0 +1,8 @@
+{
+  "jsonrpc": "2.0",
+  "method": "TerminateCall",
+  "params": {
+    "CallId": "Out-18-18-SIP"
+  },
+  "id": "helmut"
+}

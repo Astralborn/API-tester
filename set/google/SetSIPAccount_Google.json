@@ -1,0 +1,13 @@
+{
+  "apiVersion": "1.5",
+  "method": "SetSIPAccount",
+  "params": {
+    "SIPAccount": {
+      "UserId": "user6130",
+      "Password": "db6864a5611fc873",
+      "Registrar": "192.168.0.11",
+      "PublicDomain": "example9.axis.com"
+    }
+  },
+  "context": "test12345"
+}
