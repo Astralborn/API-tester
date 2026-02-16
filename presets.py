@@ -1,55 +1,86 @@
-import sys
-import os
+from __future__ import annotations
+
 import json
+from pathlib import Path
+from typing import Any, Final
+
 from constants import PRESETS_FILE
 
-def resource_path(relative_path):
+
+# ================= Resource Path =================
+
+def resource_path(relative_path: str) -> Path:
     """
-    Returns the absolute path to a resource, whether running as a script or an EXE.
-    External files (JSONs) must be located next to the EXE or in a subfolder.
+    Return absolute path to a resource whether running as script or PyInstaller EXE.
+    External files must live next to the executable or in subfolders.
     """
-    if getattr(sys, 'frozen', False):  # Running as EXE
-        base_path = os.path.dirname(sys.executable)
-    else:  # Running as script
-        base_path = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(base_path, relative_path)
+    import sys
+
+    base_dir = (
+        Path(sys.executable).parent
+        if getattr(sys, "frozen", False)
+        else Path(__file__).resolve().parent
+    )
+    return base_dir / relative_path
+
+
+# ================= Preset Manager =================
 
 class PresetManager:
-    def __init__(self):
-        self.presets = []
+    def __init__(self) -> None:
+        self.presets: list[dict[str, Any]] = []
         self.load_presets()
 
-    def load_presets(self):
-        path = resource_path(PRESETS_FILE)
-        if os.path.exists(path):
-            try:
-                with open(path, "r", encoding="utf-8") as f:
-                    self.presets = json.load(f)
-            except Exception:
-                self.presets = []
-        else:
+    # ---------- Load / Save ----------
+
+    def _preset_path(self) -> Path:
+        """Return resolved presets file path."""
+        return resource_path(PRESETS_FILE)
+
+    def load_presets(self) -> None:
+        """Load presets from JSON file."""
+        path = self._preset_path()
+
+        if not path.exists():
+            self.presets = []
+            return
+
+        try:
+            with path.open("r", encoding="utf-8") as f:
+                self.presets = json.load(f)
+        except Exception:
+            # Corrupt JSON or read error → reset safely
             self.presets = []
 
-    def save_presets(self):
-        path = resource_path(PRESETS_FILE)
-        try:
-            with open(path, "w", encoding="utf-8") as f:
-                json.dump(self.presets, f, indent=2)
-        except Exception as e:
-            print(f"Failed to save presets: {e}")
+    def save_presets(self) -> None:
+        """Persist presets to disk."""
+        path = self._preset_path()
 
-    def add_preset(self, preset):
-        existing = self.get_by_name(preset["name"])
+        try:
+            with path.open("w", encoding="utf-8") as f:
+                json.dump(self.presets, f, indent=2, ensure_ascii=False)
+        except Exception as exc:
+            print(f"Failed to save presets: {exc}")
+
+    # ---------- CRUD ----------
+
+    def add_preset(self, preset: dict[str, Any]) -> None:
+        """Add or replace preset by name."""
+        name = preset.get("name")
+        if not name:
+            return
+
+        existing = self.get_by_name(name)
         if existing:
             self.presets.remove(existing)
+
         self.presets.append(preset)
         self.save_presets()
 
-    def get_by_name(self, name):
-        for p in self.presets:
-            if p.get("name") == name:
-                return p
-        return None
+    def get_by_name(self, name: str) -> dict[str, Any] | None:
+        """Return preset dict by name."""
+        return next((p for p in self.presets if p.get("name") == name), None)
 
-    def get_names(self):
-        return [p.get("name") for p in self.presets]
+    def get_names(self) -> list[str]:
+        """Return list of preset names."""
+        return [p.get("name", "") for p in self.presets]

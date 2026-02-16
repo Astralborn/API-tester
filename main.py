@@ -1,17 +1,31 @@
 import sys
+
+from PySide6.QtGui import QColor, QPalette
 from PySide6.QtWidgets import QApplication
-from PySide6.QtGui import QPalette, QColor
+
 from app import VapixApp
 
-if __name__ == "__main__":
+
+def create_light_palette() -> QPalette:
+    """Return a simple optional light palette."""
+    palette = QPalette()
+    palette.setColor(QPalette.Window, QColor(245, 245, 245))
+    palette.setColor(QPalette.Base, QColor(255, 255, 255))
+    return palette
+
+
+def main() -> int:
+    """Application entry point."""
     app = QApplication(sys.argv)
 
     # Optional light palette
-    palette = QPalette()
-    palette.setColor(QPalette.Window, QColor(245,245,245))
-    palette.setColor(QPalette.Base, QColor(255,255,255))
-    app.setPalette(palette)
+    app.setPalette(create_light_palette())
 
     win = VapixApp()
     win.show()
-    sys.exit(app.exec())
+
+    return app.exec()
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

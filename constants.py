@@ -1,41 +1,62 @@
-import os
 import sys
+from pathlib import Path
+from typing import Final
 
+
+# ================= Resource Paths =================
 
 def resource_path(relative_path: str) -> str:
     """
-    Returns the absolute path to a resource (JSON, presets, logs),
-    works for both scripts and EXE (PyInstaller --onedir).
+    Return absolute path to a resource (JSON, presets, logs).
+    Works for both Python scripts and PyInstaller EXE (--onedir).
     """
-    if getattr(sys, "frozen", False):  # Running as EXE
-        base_dir = os.path.dirname(sys.executable)
-    else:
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(base_dir, relative_path)
+    base_dir = (
+        Path(sys.executable).parent
+        if getattr(sys, "frozen", False)
+        else Path(__file__).resolve().parent
+    )
+    return str(base_dir / relative_path)
 
 
-# ---------------- Folders & Files ----------------
-JSON_FOLDER = resource_path("json_configs")
-LOGS_FOLDER = resource_path("logs")
-PRESETS_FILE = resource_path("presets.json")
+# ================= Folders & Files =================
 
-# Light Theme Colors
-LIGHT_BG = "#f0f0f0"
-ENTRY_BG = "#ffffff"
-TEXT_COLOR = "#000000"
-BTN_ACTIVE = "#d0d0d0"
-STATUS_BG = "#e0e0e0"
-RESP_OK = "#e0ffe0"
-RESP_WARN = "#fff4e0"
-RESP_ERR = "#ffe0e0"
+JSON_FOLDER: Final[str] = resource_path("json_configs")
+LOGS_FOLDER: Final[str] = resource_path("logs")
+PRESETS_FILE: Final[str] = resource_path("presets.json")
 
-# API modes
-JSON_TYPES = ["Normal JSON", "Google JSON", "JSON-RPC"]
-METHOD_IN_OPTIONS = ["Method in Path", "Method in Action", "Method in JSON Body"]
+
+# ================= Theme Colors =================
+
+class LightTheme:
+    BG: Final[str] = "#f0f0f0"
+    ENTRY_BG: Final[str] = "#ffffff"
+    TEXT_COLOR: Final[str] = "#000000"
+    BTN_ACTIVE: Final[str] = "#d0d0d0"
+    STATUS_BG: Final[str] = "#e0e0e0"
+
+    RESP_OK: Final[str] = "#e0ffe0"
+    RESP_WARN: Final[str] = "#fff4e0"
+    RESP_ERR: Final[str] = "#ffe0e0"
+
+
+# ================= API Modes =================
+
+JSON_TYPES: Final[list[str]] = [
+    "Normal JSON",
+    "Google JSON",
+    "JSON-RPC",
+]
+
+METHOD_IN_OPTIONS: Final[list[str]] = [
+    "Method in Path",
+    "Method in Action",
+    "Method in JSON Body",
+]
+
 
 # ================= VAPIX Endpoints =================
 
-VAPIX_ENDPOINTS = [
+VAPIX_ENDPOINTS: Final[list[str]] = [
     # -------- Base --------
     "/vapix/call",
     "/vapix/intercom/",

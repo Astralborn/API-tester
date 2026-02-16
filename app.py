@@ -1,33 +1,39 @@
+from __future__ import annotations
+
 import json
-from dialogs import MultiSelectDialog
-from PySide6.QtWidgets import *
+from typing import Any
+
 from PySide6.QtGui import QFont, QTextCursor, QPalette, QColor, QIcon
+from PySide6.QtWidgets import *
+
 from constants import *
+from dialogs import MultiSelectDialog
 from presets import PresetManager
 from requests_manager import RequestManager
 
+
 class VapixApp(QWidget):
-    def __init__(self):
+    # ================= Init =================
+
+    def __init__(self) -> None:
         super().__init__()
+
         self.setWindowTitle("VAPIX Test Tool")
         self.setWindowIcon(QIcon(resource_path("vapix_icon.ico")))
         self.resize(1200, 720)
 
-        # ---------------- Managers ----------------
+        # Managers
         self.presets = PresetManager()
         self.requests = RequestManager()
 
-        # ---------------- Theme ----------------
+        # Theme + UI
         self.apply_light_theme()
-
-        # ---------------- Build UI ----------------
         self.build_ui()
+        self.update_presets_list()
 
-        # ---------------- Initial Preset List ----------------
-        self.update_presets_list()  # populate combo boxes with presets
+    # ================= Theme =================
 
-    # ---------------- Light Theme ----------------
-    def apply_light_theme(self):
+    def apply_light_theme(self) -> None:
         palette = QPalette()
         palette.setColor(QPalette.Window, QColor("#f4f4f4"))
         palette.setColor(QPalette.Base, QColor("#ffffff"))
@@ -37,37 +43,25 @@ class VapixApp(QWidget):
         palette.setColor(QPalette.HighlightedText, QColor("#ffffff"))
         QApplication.setPalette(palette)
 
-        self.setStyleSheet("""
-            QPushButton {
-                border-radius: 6px;
-                padding: 4px 10px;
-            }
-            QPushButton:hover {
-                background-color: #4ca3e0;
-                color: #ffffff;
-            }
-            QGroupBox {
-                border: 1px solid #4ca3e0;
-                border-radius: 6px;
-                margin-top: 6px;
-            }
-            QGroupBox::title {
-                subcontrol-origin: margin;
-                left: 10px;
-                padding: 0 3px 0 3px;
-            }
-        """)
+        self.setStyleSheet(
+            """
+            QPushButton { border-radius: 6px; padding: 4px 10px; }
+            QPushButton:hover { background-color: #4ca3e0; color: #ffffff; }
+            QGroupBox { border: 1px solid #4ca3e0; border-radius: 6px; margin-top: 6px; }
+            QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 3px; }
+            """
+        )
 
-    # ---------------- Build UI ----------------
-    def build_ui(self):
+    # ================= UI =================
+
+    def build_ui(self) -> None:
         outer = QVBoxLayout(self)
         top_layout = QHBoxLayout()
 
-        # ---------------- Left Panel ----------------
+        # ----- Left panel -----
         left_group = QGroupBox("Presets && Request Setup")
         left_form = QFormLayout(left_group)
 
-        # Preset selection
         self.preset_combo = QComboBox()
         self.preset_combo.currentTextChanged.connect(self.on_preset_changed)
 
@@ -75,32 +69,28 @@ class VapixApp(QWidget):
         self.preset_search.setPlaceholderText("Search preset...")
         self.preset_search.textChanged.connect(self.update_presets_list)
 
-        # Test mode
         self.test_mode_combo = QComboBox()
         self.test_mode_combo.addItems(["happy", "unhappy"])
         self.test_mode_combo.currentTextChanged.connect(self.update_presets_list)
 
-        # Endpoint
         self.endpoint_combo = QComboBox()
         self.endpoint_combo.addItems(VAPIX_ENDPOINTS)
 
-        # JSON
         self.json_combo = QComboBox()
         self.json_combo.addItem("(none)")
 
         self.json_type_combo = QComboBox()
         self.json_type_combo.addItems(["normal", "google", "rpc"])
 
-        # Load/Save buttons
         btn_load = QPushButton("Load")
         btn_save = QPushButton("Save")
         btn_load.clicked.connect(self.load_preset)
         btn_save.clicked.connect(self.save_preset)
+
         btn_row = QHBoxLayout()
         btn_row.addWidget(btn_load)
         btn_row.addWidget(btn_save)
 
-        # Add to left form layout
         left_form.addRow("Test Mode:", self.test_mode_combo)
         left_form.addRow("Search:", self.preset_search)
         left_form.addRow("Preset:", self.preset_combo)
@@ -111,7 +101,7 @@ class VapixApp(QWidget):
 
         top_layout.addWidget(left_group, 1)
 
-        # ---------------- Right Panel ----------------
+        # ----- Right panel -----
         right_group = QGroupBox("Device Connection")
         right_form = QFormLayout(right_group)
 
@@ -128,8 +118,9 @@ class VapixApp(QWidget):
 
         top_layout.addWidget(right_group, 1)
 
-        # ---------------- Buttons Bar ----------------
+        # ----- Buttons -----
         btn_bar = QHBoxLayout()
+
         self.btn_send = QPushButton("SEND REQUEST")
         self.btn_multi = QPushButton("RUN MULTIPLE PRESETS")
         self.btn_clear = QPushButton("CLEAR RESPONSES")
@@ -142,176 +133,102 @@ class VapixApp(QWidget):
         btn_bar.addWidget(self.btn_multi)
         btn_bar.addWidget(self.btn_clear)
 
-        # ---------------- Response Area ----------------
-        self.response = QTextEdit()
-        self.response.setReadOnly(True)
+        # ----- Response -----
+        self.response = QTextEdit(readOnly=True)
         self.response.setFont(QFont("Consolas", 10))
         self.response.setLineWrapMode(QTextEdit.NoWrap)
 
-        # ---------------- Status Bar ----------------
+        # ----- Status -----
         self.status = QStatusBar()
         self.status.showMessage("Ready")
 
-        # ---------------- Assemble Layout ----------------
         outer.addLayout(top_layout)
         outer.addLayout(btn_bar)
         outer.addWidget(self.response, 1)
         outer.addWidget(self.status)
 
+    # ================= Preset filtering =================
 
-    def update_presets_list(self):
-        """Filter presets by current test mode and search text, update both combo boxes."""
-        search_text = self.preset_search.text().lower()
-        mode = self.test_mode_combo.currentText().lower()  # 'happy' or 'unhappy'
+    def _preset_matches(self, preset: dict[str, Any], mode: str, search: str) -> bool:
+        name = preset.get("name", "")
+        json_file = preset.get("json_file", "")
+        if not json_file:
+            return False
+
+        is_unhappy = "/unhappy/" in json_file.replace("\\", "/").lower()
+
+        if (mode == "happy" and is_unhappy) or (mode == "unhappy" and not is_unhappy):
+            return False
+
+        return search in name.lower()
+
+    def update_presets_list(self) -> None:
+        search = self.preset_search.text().lower()
+        mode = self.test_mode_combo.currentText().lower()
 
         self.preset_combo.clear()
         self.json_combo.clear()
         self.json_combo.addItem("(none)")
 
         for preset in self.presets.presets:
-            name = preset.get("name", "")
-            json_file = preset.get("json_file", "")
+            if self._preset_matches(preset, mode, search):
+                self.preset_combo.addItem(preset["name"])
+                self.json_combo.addItem(preset["json_file"])
 
-            if not json_file:
-                continue
-
-            # Normalize path to detect unhappy folder
-            json_file_norm = json_file.replace("\\", "/").lower()
-            is_unhappy = "/unhappy/" in json_file_norm
-
-            # Apply mode filter
-            if (mode == "happy" and is_unhappy) or (mode == "unhappy" and not is_unhappy):
-                continue
-
-            # Apply search filter
-            if search_text in name.lower():
-                self.preset_combo.addItem(name)
-                self.json_combo.addItem(json_file)
-
-        # Automatically select first preset if available
-        if self.preset_combo.count() > 0:
+        if self.preset_combo.count():
             self.preset_combo.setCurrentIndex(0)
             self.on_preset_changed(self.preset_combo.currentText())
 
-    def on_preset_changed(self, name):
+    def on_preset_changed(self, name: str) -> None:
         preset = self.presets.get_by_name(name)
         if not preset:
             return
 
-        json_file = preset.get("json_file", "(none)")
-
-        # Rebuild JSON combo so it always matches preset
         self.json_combo.clear()
         self.json_combo.addItem("(none)")
 
+        json_file = preset.get("json_file")
         if json_file and json_file != "(none)":
             self.json_combo.addItem(json_file)
             self.json_combo.setCurrentText(json_file)
 
+    # ================= Response =================
 
-    # ---------------- Filter Presets / JSON ----------------
-    def filter_presets_by_mode(self):
-        mode = self.test_mode_combo.currentText().lower()  # happy / unhappy
-        self.preset_combo.clear()
-        self.json_combo.clear()
-        self.json_combo.addItem("(none)")
-
-        for preset in self.presets.presets:
-            json_file = preset.get("json_file", "")
-            if not json_file or json_file == "(none)":
-                continue
-
-            # Normalize path separators
-            json_file_norm = json_file.replace("\\", "/").lower()
-
-            # Check if it is unhappy
-            is_unhappy = "/unhappy/" in json_file_norm
-
-            if (mode == "happy" and not is_unhappy) or (mode == "unhappy" and is_unhappy):
-                self.preset_combo.addItem(preset["name"])
-                self.json_combo.addItem(json_file)
-
-        # After filtering by mode, apply search filter if any
-        self.filter_presets(self.preset_search.text())
-
-    def filter_presets(self, text):
-        text = text.lower()
-
-        # Reset UI lists
-        self.preset_combo.clear()
-        self.json_combo.clear()
-        self.json_combo.addItem("(none)")
-
-        # Current mode: happy / unhappy
-        mode = self.test_mode_combo.currentText().lower()
-
-        for preset in self.presets.presets:
-            name = preset.get("name", "")
-            json_file = preset.get("json_file", "")
-
-            if not json_file:
-                continue
-
-            # Normalize path to detect unhappy folder
-            json_file_norm = json_file.replace("\\", "/").lower()
-            is_unhappy = "/unhappy/" in json_file_norm
-
-            # Apply mode filter
-            if mode == "happy" and is_unhappy:
-                continue
-            if mode == "unhappy" and not is_unhappy:
-                continue
-
-            # Apply text search
-            if text in name.lower():
-                self.preset_combo.addItem(name)
-                self.json_combo.addItem(json_file)
-    # ---------------- Display Response ----------------
-    def display_response(self, text, preset_name, tag):
+    def display_response(self, text: str, _: str, __: str) -> None:
         try:
             if "{" in text:
                 idx = text.index("{")
                 obj = json.loads(text[idx:])
-                pretty = json.dumps(obj, indent=2)
-                text = text[:idx] + pretty
+                text = text[:idx] + json.dumps(obj, indent=2)
         except Exception:
             pass
 
-        text_html = (
-            text.replace("&", "&amp;")
-            .replace("<", "&lt;")
-            .replace(">", "&gt;")
-        )
         html = (
-            f'<div style="padding:4px; margin:2px; font-family:Consolas; white-space:pre;">'
-            f'{text_html}'
-            f'</div>'
-            '<pre style="font-family:Consolas; color:#888; margin:8px 4px;">'
-            '----------------------------------------\n\n'
-            '</pre>'
+            f'<div style="padding:4px;margin:2px;font-family:Consolas;white-space:pre;">'
+            f'{text.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;")}'
+            f"</div>"
+            '<pre style="font-family:Consolas;color:#888;margin:8px 4px;">'
+            "----------------------------------------\n\n</pre>"
         )
+
         self.response.moveCursor(QTextCursor.End)
         self.response.insertHtml(html)
         self.response.moveCursor(QTextCursor.End)
 
-    def clear_response(self):
+    def clear_response(self) -> None:
         self.response.clear()
 
-    # ---------------- Requests ----------------
-    def send_request(self):
+    # ================= Requests =================
+
+    def send_request(self) -> None:
         ip = self.ip_edit.text().strip()
         if not ip:
             QMessageBox.warning(self, "Error", "Device IP required")
             return
 
-        endpoint = self.endpoint_combo.currentText()
-        json_file = self.json_combo.currentText()
-        json_type = self.json_type_combo.currentText()
-        use_simple = self.simple_check.isChecked()
+        self.status.showMessage("Sending request...")
 
-        self.status.showMessage(f"Sending request...")
-
-        def on_response(text, preset_name, tag):
+        def on_response(text: str, preset_name: str, tag: str) -> None:
             self.display_response(text, preset_name, tag)
             self.status.showMessage("Request finished")
 
@@ -319,30 +236,34 @@ class VapixApp(QWidget):
             ip,
             self.user_edit.text(),
             self.pass_edit.text(),
-            endpoint,
-            json_file,
-            use_simple,
-            json_type,
+            self.endpoint_combo.currentText(),
+            self.json_combo.currentText(),
+            self.simple_check.isChecked(),
+            self.json_type_combo.currentText(),
             on_response,
-            preset_name=endpoint
+            preset_name=self.endpoint_combo.currentText(),
         )
 
-    # ---------------- Presets ----------------
-    def save_preset(self):
+    # ================= Presets =================
+
+    def save_preset(self) -> None:
         name, ok = QInputDialog.getText(self, "Preset Name", "Enter preset name:")
         if not ok or not name:
             return
-        preset = {
-            "name": name,
-            "endpoint": self.endpoint_combo.currentText(),
-            "json_file": self.json_combo.currentText(),
-            "simple_format": self.simple_check.isChecked(),
-            "json_type": self.json_type_combo.currentText()
-        }
-        self.presets.add_preset(preset)
-        self.filter_presets_by_mode()
 
-    def load_preset(self):
+        self.presets.add_preset(
+            {
+                "name": name,
+                "endpoint": self.endpoint_combo.currentText(),
+                "json_file": self.json_combo.currentText(),
+                "simple_format": self.simple_check.isChecked(),
+                "json_type": self.json_type_combo.currentText(),
+            }
+        )
+
+        self.update_presets_list()
+
+    def load_preset(self) -> None:
         name = self.preset_combo.currentText().strip()
         if not name:
             QMessageBox.warning(self, "Error", "No preset selected")
@@ -353,35 +274,22 @@ class VapixApp(QWidget):
             QMessageBox.warning(self, "Error", f"Preset '{name}' not found")
             return
 
-        if self.endpoint_combo.findText(preset["endpoint"]) == -1:
-            self.endpoint_combo.addItem(preset["endpoint"])
         self.endpoint_combo.setCurrentText(preset["endpoint"])
-
-        json_file = preset.get("json_file", "(none)")
-        if self.json_combo.findText(json_file) == -1:
-            self.json_combo.addItem(json_file)
-        self.json_combo.setCurrentText (json_file)
-
-        json_type = preset.get("json_type", "normal")
-        if self.json_type_combo.findText(json_type) == -1:
-            self.json_type_combo.addItem(json_type)
-        self.json_type_combo.setCurrentText(json_type)
+        self.json_combo.setCurrentText(preset.get("json_file", "(none)"))
+        self.json_type_combo.setCurrentText(preset.get("json_type", "normal"))
 
         self.status.showMessage(f"Preset '{name}' loaded")
 
-    # ---------------- Multi-Preset ----------------
-    def run_multiple(self):
-        if not self.presets.presets:
-            QMessageBox.warning(self, "Error", "No presets saved")
+    # ================= Multi run =================
+
+    def run_multiple(self) -> None:
+        names = [self.preset_combo.itemText(i) for i in range(self.preset_combo.count())]
+        if not names:
+            QMessageBox.warning(self, "Error", "No presets available")
             return
 
-        dlg = MultiSelectDialog([self.preset_combo.itemText(i) for i in range(self.preset_combo.count())])
-        if not dlg.exec():
-            return
-
-        selected = dlg.selected
-        if not selected:
-            QMessageBox.information(self, "Info", "No presets selected")
+        dlg = MultiSelectDialog(names)
+        if not dlg.exec() or not dlg.selected:
             return
 
         ip = self.ip_edit.text().strip()
@@ -392,19 +300,20 @@ class VapixApp(QWidget):
         self.status.showMessage("Running multiple presets...")
         log_file = self.requests.start_new_log("MultiPreset_Run")
 
-        def run_next(i=0):
-            if i >= len(selected):
+        def run_next(i: int = 0) -> None:
+            if i >= len(dlg.selected):
                 self.status.showMessage("All presets finished")
                 return
 
-            preset = self.presets.get_by_name(selected[i])
+            preset = self.presets.get_by_name(dlg.selected[i])
+            if not preset:
+                run_next(i + 1)
+                return
 
-            def on_response(text, preset_name, tag):
+            def on_response(text: str, preset_name: str, tag: str) -> None:
                 self.display_response(text, preset_name, tag)
-                self.status.showMessage(f"Finished preset {preset_name} ({i+1}/{len(selected)})")
-                run_next(i+1)
-
-            use_simple = self.simple_check.isChecked()
+                self.status.showMessage(f"Finished {preset_name} ({i+1}/{len(dlg.selected)})")
+                run_next(i + 1)
 
             self.requests.send_request_async(
                 ip,
@@ -412,11 +321,11 @@ class VapixApp(QWidget):
                 self.pass_edit.text(),
                 preset["endpoint"],
                 preset["json_file"],
-                use_simple,
+                self.simple_check.isChecked(),
                 preset["json_type"],
                 on_response,
-                preset_name=selected[i],
-                log_file=log_file
+                preset_name=dlg.selected[i],
+                log_file=log_file,
             )
 
         run_next()
