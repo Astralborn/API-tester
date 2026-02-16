@@ -1,0 +1,11 @@
+{
+  "apiVersion": "1.5",
+  "method": "RemoveSIPAccounts",
+  "params": {
+    "SIPAccountId": [
+      "sip_account_0",
+      "sip_account_1"
+    ]
+  },
+  "context": "test12345"
+}

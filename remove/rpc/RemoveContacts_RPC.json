@@ -1,0 +1,10 @@
+{
+  "jsonrpc": "2.0",
+  "method": "RemoveContacts",
+  "params": {
+    "ids": [
+      "58e1e584-c1f8-4f59-afba-03fb4bbac111"
+    ]
+  },
+  "id": "helmut"
+}
