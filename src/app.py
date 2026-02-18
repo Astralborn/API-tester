@@ -18,8 +18,8 @@ class VapixApp(QWidget):
     def __init__(self) -> None:
         super().__init__()
 
-        self.setWindowTitle("VAPIX Test Tool")
-        self.setWindowIcon(QIcon(resource_path("vapix_icon.ico")))
+        self.setWindowTitle("API Test Tool")
+        self.setWindowIcon(QIcon(resource_path("api_tester_icon.ico")))
         self.resize(1200, 720)
 
         # Managers
@@ -106,8 +106,8 @@ class VapixApp(QWidget):
         right_form = QFormLayout(right_group)
 
         self.ip_edit = QLineEdit()
-        self.user_edit = QLineEdit("admin")
-        self.pass_edit = QLineEdit("Test1234")
+        self.user_edit = QLineEdit()
+        self.pass_edit = QLineEdit()
         self.pass_edit.setEchoMode(QLineEdit.Password)
         self.simple_check = QCheckBox("Use format=simple")
 
