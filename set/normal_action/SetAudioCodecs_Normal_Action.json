@@ -1,8 +1,0 @@
-{
-  "AudioCodec": [
-    {
-      "Name": "G.722",
-      "SampleRate": 16000
-    }
-  ]
-}

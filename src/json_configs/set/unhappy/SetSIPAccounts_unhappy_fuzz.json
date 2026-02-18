@@ -1,0 +1,12 @@
+{
+  "SIPAccounts": {
+    "SIPAccount": [
+      {
+        "UserId": "' OR 1=1 --",
+        "Password": "\u0000\u0001\u0002",
+        "Registrar": "\u6f22\u5b57\ud83d\ude80",
+        "PublicDomain": "' OR 1=1 --"
+      }
+    ]
+  }
+}

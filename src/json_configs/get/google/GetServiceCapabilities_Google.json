@@ -1,0 +1,6 @@
+{
+  "apiVersion": "1.5",
+  "method": "GetServiceCapabilities",
+  "params": {},
+  "context": "test12345"
+}

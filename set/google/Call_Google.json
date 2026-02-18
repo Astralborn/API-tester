@@ -1,8 +1,0 @@
-{
-  "apiVersion": "1.5",
-  "method": "Call",
-  "params": {
-    "To": "sip:10.27.35.8:5060"
-  },
-  "context": "test12345"
-}

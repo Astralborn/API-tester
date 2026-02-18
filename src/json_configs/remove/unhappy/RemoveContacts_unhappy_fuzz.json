@@ -1,0 +1,5 @@
+{
+  "ids": [
+    "<script>alert(1)</script>"
+  ]
+}

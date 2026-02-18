@@ -1,0 +1,6 @@
+{
+  "apiVersion": "1.5",
+  "method": "GetDefaultAudioCodecs",
+  "params": {},
+  "context": "test12345"
+}

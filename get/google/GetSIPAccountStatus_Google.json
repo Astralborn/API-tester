@@ -1,8 +1,0 @@
-{
-  "apiVersion": "1.5",
-  "method": "GetSIPAccountStatus",
-  "params": {
-    "SIPAccountId": "sip_account_0"
-  },
-  "context": "test12345"
-}

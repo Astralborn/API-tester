@@ -1,0 +1,23 @@
+{
+  "jsonrpc": "2.0",
+  "method": "SetSIPAccounts",
+  "params": {
+    "SIPAccounts": {
+      "SIPAccount": [
+        {
+          "UserId": "user3478",
+          "Password": "6298cb68b7bb2ee9",
+          "Registrar": "192.168.0.150",
+          "PublicDomain": "example69.axis.com"
+        },
+        {
+          "UserId": "user8116",
+          "Password": "c5d0b6e980e392d5",
+          "Registrar": "192.168.0.58",
+          "PublicDomain": "example81.axis.com"
+        }
+      ]
+    }
+  },
+  "id": "helmut"
+}

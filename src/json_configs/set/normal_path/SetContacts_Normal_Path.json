@@ -1,0 +1,24 @@
+{
+  "contacts": [
+    {
+      "id": "91152845-918d-453f-95d9-3a6a27203857",
+      "type": "Person",
+      "firstName": "Tester 51",
+      "lastName": "",
+      "callInformation": [
+        {
+          "type": "SIP",
+          "address": "1921683675",
+          "accountid": "sip_account_1"
+        }
+      ],
+      "callForkingType": "sequential",
+      "UIAttributes": [
+        {
+          "Name": "DisplayName",
+          "Value": "Tester 51"
+        }
+      ]
+    }
+  ]
+}

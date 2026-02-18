@@ -1,0 +1,8 @@
+{
+  "AudioCodec": [
+    {
+      "Name": "<script>alert(1)</script>",
+      "SampleRate": 999999999999999999
+    }
+  ]
+}

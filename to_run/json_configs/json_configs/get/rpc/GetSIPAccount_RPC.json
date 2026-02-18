@@ -1,0 +1,8 @@
+{
+  "jsonrpc": "2.0",
+  "method": "GetSIPAccount",
+  "params": {
+    "SIPAccountId": "sip_account_0"
+  },
+  "id": "helmut"
+}

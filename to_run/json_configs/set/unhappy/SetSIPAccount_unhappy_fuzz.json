@@ -1,0 +1,8 @@
+{
+  "SIPAccount": {
+    "UserId": "\u0000\u0001\u0002",
+    "Password": "<script>alert(1)</script>",
+    "Registrar": "\u0000\u0001\u0002",
+    "PublicDomain": "\u0000\u0001\u0002"
+  }
+}
