@@ -2,16 +2,16 @@
   "SIPAccounts": {
     "SIPAccount": [
       {
-        "UserId": "user4147",
-        "Password": "397ba5762219f4e2",
-        "Registrar": "192.168.0.24",
-        "PublicDomain": "example23.com"
+        "UserId": "user5753",
+        "Password": "3706fd11f25b6d07",
+        "Registrar": "192.168.0.253",
+        "PublicDomain": "example49.com"
       },
       {
-        "UserId": "user5261",
-        "Password": "6cc356f79f1bf02b",
-        "Registrar": "192.168.0.118",
-        "PublicDomain": "example86.com"
+        "UserId": "user9728",
+        "Password": "af1fc06b3c06e004",
+        "Registrar": "192.168.0.42",
+        "PublicDomain": "example90.com"
       }
     ]
   }

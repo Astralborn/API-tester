@@ -9,21 +9,17 @@ from PySide6.QtWidgets import *
 
 from constants import *
 from dialogs import MultiSelectDialog
-from presets import PresetManager
 from requests_manager import RequestManager, RequestWorker
 from settings import SettingsManager
-from response_viewer import ResponseViewer
-from status_bar import EnhancedStatusBar, StatusProperties
+from di_container import DIContainer, PresetManagerProtocol, RequestManagerProtocol, SettingsManagerProtocol
 
 
-class ApiTestApp(QWidget, StatusProperties):
+
+class ApiTestApp(QWidget):
     # ================= Init =================
 
     def __init__(self) -> None:
         super().__init__()
-        
-        # Initialize StatusProperties
-        StatusProperties.__init__(self)
 
         self.setWindowTitle("API Test Tool")
         self.setWindowIcon(QIcon(resource_path("api_tester_icon.ico")))
@@ -166,12 +162,13 @@ class ApiTestApp(QWidget, StatusProperties):
         btn_bar.addWidget(self.btn_cancel)
 
         # ----- Response -----
-        self.response = ResponseViewer()
-        
-        # ----- Enhanced Status Bar -----
-        self.status = EnhancedStatusBar()
-        self.set_status_bar(self.status)  # Connect to StatusProperties
-        self.status.set_ready("Ready")
+        self.response = QTextEdit(readOnly=True)
+        self.response.setFont(QFont("Consolas", 10))
+        self.response.setLineWrapMode(QTextEdit.NoWrap)
+
+        # ----- Status -----
+        self.status = QStatusBar()
+        self.status.showMessage("Ready")
 
         outer.addLayout(top_layout)
         outer.addLayout(btn_bar)
@@ -225,25 +222,29 @@ class ApiTestApp(QWidget, StatusProperties):
 
     # ================= Response =================
 
-    def display_response(self, text: str, preset_name: str, tag: str) -> None:
-        """Display response using enhanced viewer with syntax highlighting."""
-        self.response.add_response(text, preset_name, tag)
-        
-        # Update status based on response tag
-        if tag == "ok":
-            self.show_success("Request completed successfully", 3000)
-        elif tag == "warn":
-            self.show_warning("Request completed with warnings", 5000)
-        elif tag == "err":
-            self.show_error("Request failed")
-        
-        # Update request count
-        self.set_request_count(self.response.response_count)
+    def display_response(self, text: str, _: str, __: str) -> None:
+        try:
+            if "{" in text:
+                idx = text.index("{")
+                obj = json.loads(text[idx:])
+                text = text[:idx] + json.dumps(obj, indent=2)
+        except Exception:
+            pass
+
+        html = (
+            f'<div style="padding:4px;margin:2px;font-family:Consolas;white-space:pre;">'
+            f'{text.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;")}'
+            f"</div>"
+            '<pre style="font-family:Consolas;color:#888;margin:8px 4px;">'
+            "----------------------------------------\n\n</pre>"
+        )
+
+        self.response.moveCursor(QTextCursor.End)
+        self.response.insertHtml(html)
+        self.response.moveCursor(QTextCursor.End)
 
     def clear_response(self) -> None:
-        """Clear all responses and reset counters."""
-        self.response.clear_all()
-        self.set_request_count(0)
+        self.response.clear()
 
     # ================= Request Management =================
 
@@ -251,8 +252,6 @@ class ApiTestApp(QWidget, StatusProperties):
         """Cancel all active requests."""
         if not self.active_requests:
             return
-        
-        self.show_warning("Cancelling all requests...")
         
         for worker in self.active_requests:
             worker.terminate()
@@ -263,9 +262,7 @@ class ApiTestApp(QWidget, StatusProperties):
         self.total_request_count = 0
         
         self.btn_cancel.setEnabled(False)
-        self.hide_progress()
-        self.set_connection_status(False)
-        self.show_ready("All requests cancelled")
+        self.status.showMessage("All requests cancelled")
 
     def _track_request(self, worker: RequestWorker) -> None:
         """Track a new request worker."""
@@ -290,7 +287,8 @@ class ApiTestApp(QWidget, StatusProperties):
     def _update_progress(self, completed: int, total: int) -> None:
         """Update progress display."""
         if total > 1:  # Only show progress for multiple requests
-            self.set_progress(completed, total)
+            progress_text = f"Progress: {completed}/{total} requests"
+            self.status.showMessage(progress_text)
 
     # ================= Settings Management =================
 
@@ -394,25 +392,24 @@ class ApiTestApp(QWidget, StatusProperties):
     def send_request(self) -> None:
         ip = self.ip_edit.text().strip()
         if not ip:
-            self.show_error("Device IP required")
+            QMessageBox.warning(self, "Error", "Device IP required")
             return
 
         # Validate IP format
         if not self._validate_ip(ip):
-            self.show_error("Invalid IP address format")
+            QMessageBox.warning(self, "Error", "Invalid IP address format")
             return
 
         # Check if username is provided for authentication
         if not self.user_edit.text().strip():
-            self.show_error("Username required for authentication")
+            QMessageBox.warning(self, "Error", "Username required for authentication")
             return
 
-        # Update connection status
-        self.set_connection_status(True, ip)
-        self.show_working(f"Sending request to {ip}...")
+        self.status.showMessage("Sending request...")
 
         def on_response(text: str, preset_name: str, tag: str) -> None:
             self.display_response(text, preset_name, tag)
+            self.status.showMessage("Request finished")
 
         try:
             worker = self.requests.send_request_async(
@@ -433,14 +430,12 @@ class ApiTestApp(QWidget, StatusProperties):
             # Handle request completion
             def on_finished():
                 self._untrack_request(worker)
-                if not self.active_requests:
-                    self.set_connection_status(False)
             
             worker.finished.connect(on_finished)
             
         except Exception as e:
-            self.show_error(f"Failed to send request: {str(e)}")
-            self.set_connection_status(False)
+            QMessageBox.critical(self, "Error", f"Failed to send request: {str(e)}")
+            self.status.showMessage("Request failed")
 
     # ================= Presets =================
 
