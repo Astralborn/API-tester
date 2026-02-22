@@ -127,23 +127,37 @@ class RequestHandlingMixin:
         if total > 1:  # Only show progress for multiple requests
             self.status.setText(f"Progress: {completed}/{total} requests")
 
-    def display_response(self, text: str, preset_name: str, tag: str) -> None:
-        """Display formatted response in the response area."""
+    def _format_json_response(self, text: str) -> str:
+        """Try to extract and format JSON from response text."""
         try:
             if "{" in text:
                 idx = text.index("{")
                 obj = json.loads(text[idx:])
                 formatted_json = json.dumps(obj, indent=2, ensure_ascii=False)
-                text = text[:idx] + formatted_json
+                return text[:idx] + formatted_json
         except Exception:
             pass
+        return text
 
-        # Minimal separator and response styling
+    def _escape_html(self, text: str) -> str:
+        """Escape HTML special characters."""
+        return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+    def _build_response_html(self, text: str, preset_name: str, tag: str) -> str:
+        """Build HTML for response display."""
         separator = '<div style="border-top: 1px solid #c0c0c0; margin: 4px 0;"></div>'
-        header = f'<div style="font-weight: 600; color: #666666; margin-bottom: 8px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">{preset_name or "Request"} — {tag.upper()}</div>'
-        body = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\n", "<br>")
+        header_style = 'font-weight: 600; color: #666666; margin-bottom: 8px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;'
+        body_style = 'font-family: Consolas, monospace; font-size: 12px; line-height: 1.5; color: #333333;'
         
-        html = f'{separator}<div style="font-family: Consolas, monospace; font-size: 12px; line-height: 1.5; color: #333333;">{header}{body}</div>'
+        header = f'<div style="{header_style}">{preset_name or "Request"}</div><br>'
+        body = self._escape_html(text).replace("\n", "<br>")
+        
+        return f'{separator}<div style="{body_style}">{header}{body}</div>'
+
+    def display_response(self, text: str, preset_name: str, tag: str) -> None:
+        """Display formatted response in the response area."""
+        formatted_text = self._format_json_response(text)
+        html = self._build_response_html(formatted_text, preset_name, tag)
         
         self.response.moveCursor(QTextCursor.End)
         self.response.insertHtml(html)

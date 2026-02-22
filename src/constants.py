@@ -34,10 +34,6 @@ class LightTheme:
     BTN_ACTIVE: Final[str] = "#d0d0d0"
     STATUS_BG: Final[str] = "#e0e0e0"
 
-    RESP_OK: Final[str] = "#e0ffe0"
-    RESP_WARN: Final[str] = "#fff4e0"
-    RESP_ERR: Final[str] = "#ffe0e0"
-
 
 # ================= API Modes =================
 
