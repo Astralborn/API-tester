@@ -169,8 +169,8 @@ class RequestManager:
         callback: Callable[[str, str, str], None],
         preset_name: str = "",
         log_file: Path | None = None,
-    ) -> None:
-        """Start background request worker."""
+    ) -> RequestWorker:
+        """Start background request worker and return the worker instance."""
         url, payload = self.build_request(ip, endpoint, json_file, simple_format)
 
         worker = RequestWorker(
@@ -186,3 +186,5 @@ class RequestManager:
         worker.finished.connect(callback)
         self.workers.append(worker)
         worker.start()
+        
+        return worker
