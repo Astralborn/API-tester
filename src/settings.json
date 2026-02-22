@@ -1,0 +1,19 @@
+{
+  "connection": {
+    "last_ip": "1.1.1.1",
+    "last_user": "",
+    "remember_password": false,
+    "last_simple_format": false
+  },
+  "ui": {
+    "window_geometry": "01d9d0cb0003000000000109000000410000051e00000309000001090000005f0000051e00000309000000000000000006ab000001090000005f0000051e00000309",
+    "window_state": "",
+    "last_test_mode": "happy",
+    "last_json_type": "normal"
+  },
+  "presets": {
+    "last_preset": "",
+    "last_endpoint": "/api/intercom/",
+    "last_json_file": "get/normal_path/GetContacts_Normal_Path.json"
+  }
+}
