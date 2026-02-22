@@ -54,43 +54,43 @@ METHOD_IN_OPTIONS: Final[list[str]] = [
 ]
 
 
-# ================= VAPIX Endpoints =================
+# ================= API Endpoints =================
 
-VAPIX_ENDPOINTS: Final[list[str]] = [
+API_ENDPOINTS: Final[list[str]] = [
     # -------- Base --------
-    "/vapix/call",
-    "/vapix/intercom/",
+    "/api/call",
+    "/api/intercom/",
 
     # -------- Contacts / Intercom --------
-    "/vapix/intercom/GetContacts",
-    "/vapix/intercom/SetContacts",
-    "/vapix/intercom/RemoveContacts",
+    "/api/intercom/GetContacts",
+    "/api/intercom/SetContacts",
+    "/api/intercom/RemoveContacts",
 
     # -------- SIP Accounts --------
-    "/vapix/call/GetSIPAccount",
-    "/vapix/call/GetSIPAccounts",
-    "/vapix/call/SetSIPAccount",
-    "/vapix/call/SetSIPAccounts",
-    "/vapix/call/RemoveSIPAccount",
-    "/vapix/call/RemoveSIPAccounts",
-    "/vapix/call/GetSIPAccountStatus",
+    "/api/call/GetSIPAccount",
+    "/api/call/GetSIPAccounts",
+    "/api/call/SetSIPAccount",
+    "/api/call/SetSIPAccounts",
+    "/api/call/RemoveSIPAccount",
+    "/api/call/RemoveSIPAccounts",
+    "/api/call/GetSIPAccountStatus",
 
     # -------- Service / Capabilities --------
-    "/vapix/call/GetServiceCapabilities",
-    "/vapix/call/GetSupportedSIPAccountAttributes",
-    "/vapix/call/GetSupportedSIPConfigurationAttributes",
-    "/vapix/call/GetSIPConfiguration",
-    "/vapix/call/SetSIPConfiguration",
-    "/vapix/call/GetSupportedMediaEncryptionModes",
+    "/api/call/GetServiceCapabilities",
+    "/api/call/GetSupportedSIPAccountAttributes",
+    "/api/call/GetSupportedSIPConfigurationAttributes",
+    "/api/call/GetSIPConfiguration",
+    "/api/call/SetSIPConfiguration",
+    "/api/call/GetSupportedMediaEncryptionModes",
 
     # -------- Audio / Codecs --------
-    "/vapix/call/GetDefaultAudioCodecs",
-    "/vapix/call/GetSupportedAudioCodecs",
-    "/vapix/call/GetAudioCodecs",
-    "/vapix/call/SetAudioCodecs",
+    "/api/call/GetDefaultAudioCodecs",
+    "/api/call/GetSupportedAudioCodecs",
+    "/api/call/GetAudioCodecs",
+    "/api/call/SetAudioCodecs",
 
     # -------- Call Control --------
-    "/vapix/call/Call",
-    "/vapix/call/GetCallStatus",
-    "/vapix/call/TerminateCall",
+    "/api/call/Call",
+    "/api/call/GetCallStatus",
+    "/api/call/TerminateCall",
 ]

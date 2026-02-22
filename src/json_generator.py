@@ -10,7 +10,9 @@ JSON_FOLDER = "json_configs"
 PRESETS_FILE = "presets.json"
 ID_RPC = "helmut"
 GOOGLE_CONTEXT = "test12345"
+API_BASE_PATH = "/api"
 
+# Test generation summary tracking
 summary: Dict[str, int] = {
     "normal": 0,
     "unhappy_no_data": 0,
@@ -19,28 +21,49 @@ summary: Dict[str, int] = {
     "unhappy_fuzz": 0,
 }
 
-# ---------------- Helpers ----------------
+# ---------------- Utility Functions ----------------
 def generate_uuid_list(count: int = 1) -> List[str]:
+    """Generate a list of UUID strings."""
     return [str(uuid.uuid4()) for _ in range(count)]
 
 
 def save_json(path: str, payload: Any) -> None:
+    """Save payload to JSON file with proper directory creation."""
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2)
 
 
-# ---------------- Payload Generators ----------------
-def random_sip_account() -> Dict[str, Any]:
+def get_method_from_endpoint(endpoint: str) -> str:
+    """Extract method name from endpoint URL."""
+    return endpoint.split("/")[-1]
+
+
+def get_section_from_endpoint(endpoint: str) -> str:
+    """Determine section (get/set/remove) from endpoint."""
+    if endpoint in GET_ENDPOINTS:
+        return "get"
+    elif endpoint in SET_ENDPOINTS:
+        return "set"
+    elif endpoint in REMOVE_ENDPOINTS:
+        return "remove"
+    else:
+        return "unknown"
+
+
+# ---------------- Data Generators ----------------
+def generate_random_sip_account() -> Dict[str, Any]:
+    """Generate a random SIP account configuration."""
     return {
         "UserId": f"user{random.randint(1000,9999)}",
         "Password": secrets.token_hex(8),
         "Registrar": f"192.168.0.{random.randint(1,254)}",
-        "PublicDomain": f"example{random.randint(1,100)}.axis.com",
+        "PublicDomain": f"example{random.randint(1,100)}.com",
     }
 
 
-def generate_set_contacts_payload_random() -> Dict[str, Any]:
+def generate_random_contact() -> Dict[str, Any]:
+    """Generate a random contact payload."""
     first_name = f"Tester {random.randint(1,99):02d}"
     contact_id = str(uuid.uuid4())
     sip_address = f"192168{random.randint(1000,9999)}"
@@ -56,37 +79,37 @@ def generate_set_contacts_payload_random() -> Dict[str, Any]:
     }
 
 
-# ---------------- Endpoints ----------------
+# ---------------- API Endpoints ----------------
 GET_ENDPOINTS = [
-    "/vapix/intercom/GetContacts",
-    "/vapix/call/GetSIPAccount",
-    "/vapix/call/GetSIPAccounts",
-    "/vapix/call/GetSIPAccountStatus",
-    "/vapix/call/GetServiceCapabilities",
-    "/vapix/call/GetSupportedSIPAccountAttributes",
-    "/vapix/call/GetSupportedSIPConfigurationAttributes",
-    "/vapix/call/GetSIPConfiguration",
-    "/vapix/call/GetSupportedMediaEncryptionModes",
-    "/vapix/call/GetDefaultAudioCodecs",
-    "/vapix/call/GetSupportedAudioCodecs",
-    "/vapix/call/GetAudioCodecs",
-    "/vapix/call/GetCallStatus",
+    "/api/intercom/GetContacts",
+    "/api/call/GetSIPAccount",
+    "/api/call/GetSIPAccounts",
+    "/api/call/GetSIPAccountStatus",
+    "/api/call/GetServiceCapabilities",
+    "/api/call/GetSupportedSIPAccountAttributes",
+    "/api/call/GetSupportedSIPConfigurationAttributes",
+    "/api/call/GetSIPConfiguration",
+    "/api/call/GetSupportedMediaEncryptionModes",
+    "/api/call/GetDefaultAudioCodecs",
+    "/api/call/GetSupportedAudioCodecs",
+    "/api/call/GetAudioCodecs",
+    "/api/call/GetCallStatus",
 ]
 
 SET_ENDPOINTS = [
-    "/vapix/call/SetSIPAccount",
-    "/vapix/call/SetSIPAccounts",
-    "/vapix/call/SetSIPConfiguration",
-    "/vapix/call/SetAudioCodecs",
-    "/vapix/call/Call",
-    "/vapix/call/TerminateCall",
-    "/vapix/intercom/SetContacts",
+    "/api/call/SetSIPAccount",
+    "/api/call/SetSIPAccounts",
+    "/api/call/SetSIPConfiguration",
+    "/api/call/SetAudioCodecs",
+    "/api/call/Call",
+    "/api/call/TerminateCall",
+    "/api/intercom/SetContacts",
 ]
 
 REMOVE_ENDPOINTS = [
-    "/vapix/call/RemoveSIPAccount",
-    "/vapix/call/RemoveSIPAccounts",
-    "/vapix/intercom/RemoveContacts",
+    "/api/call/RemoveSIPAccount",
+    "/api/call/RemoveSIPAccounts",
+    "/api/intercom/RemoveContacts",
 ]
 
 SPECIAL_PARAMS: Dict[str, Dict[str, Any]] = {
@@ -102,19 +125,20 @@ REMOVE_PAYLOADS: Dict[str, Any] = {
 }
 
 SET_PAYLOADS: Dict[str, Any] = {
-    "SetSIPAccount": {"SIPAccount": random_sip_account()},
-    "SetSIPAccounts": {"SIPAccounts": {"SIPAccount": [random_sip_account(), random_sip_account()]}},
+    "SetSIPAccount": {"SIPAccount": generate_random_sip_account()},
+    "SetSIPAccounts": {"SIPAccounts": {"SIPAccount": [generate_random_sip_account(), generate_random_sip_account()]}},
     "SetSIPConfiguration": {"SIPConfiguration": {"SIPEnabled": True}},
     "SetAudioCodecs": {"AudioCodec": [{"Name": "G.722", "SampleRate": 16000}]},
-    "SetContacts": {"contacts": [generate_set_contacts_payload_random()]},
+    "SetContacts": {"contacts": [generate_random_contact()]},
     "TerminateCall": {"CallId": "Out-18-18-SIP"},
     "Call": {"To": "sip:10.27.35.8:5060"},
 }
 
-# ---------------- Recursive unhappy / invalid / fuzz ----------------
-def make_unhappy_payload(data: Any) -> Any:
+# ---------------- Test Data Generators ----------------
+def create_unhappy_payload(data: Any) -> Any:
+    """Create payload with empty/null values for testing unhappy path."""
     if isinstance(data, dict):
-        return {k: make_unhappy_payload(v) for k, v in data.items()}
+        return {k: create_unhappy_payload(v) for k, v in data.items()}
     if isinstance(data, list):
         return []
     if isinstance(data, str):
@@ -124,9 +148,10 @@ def make_unhappy_payload(data: Any) -> Any:
     return None
 
 
-def make_invalid_payload(data: Any) -> Any:
+def create_invalid_payload(data: Any) -> Any:
+    """Create payload with invalid values for testing error handling."""
     if isinstance(data, dict):
-        return {k: make_invalid_payload(v) for k, v in data.items()}
+        return {k: create_invalid_payload(v) for k, v in data.items()}
     if isinstance(data, list):
         return ["INVALID"]
     if isinstance(data, str):
@@ -136,9 +161,10 @@ def make_invalid_payload(data: Any) -> Any:
     return "INVALID"
 
 
-def make_wrong_type_payload(data: Any) -> Any:
+def create_wrong_type_payload(data: Any) -> Any:
+    """Create payload with wrong data types for testing validation."""
     if isinstance(data, dict):
-        return {k: make_wrong_type_payload(v) for k, v in data.items()}
+        return {k: create_wrong_type_payload(v) for k, v in data.items()}
     if isinstance(data, list):
         return "WRONG_TYPE"
     if isinstance(data, str):
@@ -150,14 +176,15 @@ def make_wrong_type_payload(data: Any) -> Any:
     return None
 
 
-def make_fuzz_payload(data: Any) -> Any:
+def create_fuzz_payload(data: Any) -> Any:
+    """Create payload with fuzz testing values."""
     fuzz_strings = ["A" * 5000, "<script>alert(1)</script>", "' OR 1=1 --", "\x00\x01\x02", "漢字🚀"]
     fuzz_numbers = [0, -1, 999999999999999999, float("inf"), float("-inf")]
 
     if isinstance(data, dict):
-        return {k: make_fuzz_payload(v) for k, v in data.items()}
+        return {k: create_fuzz_payload(v) for k, v in data.items()}
     if isinstance(data, list):
-        return [make_fuzz_payload(data[0])] if data else [None]
+        return [create_fuzz_payload(data[0])] if data else [None]
     if isinstance(data, str):
         return random.choice(fuzz_strings)
     if isinstance(data, (int, float)):
@@ -167,18 +194,21 @@ def make_fuzz_payload(data: Any) -> Any:
     return None
 
 
-# ---------------- Create folders ----------------
-sections = ["get", "set", "remove"]
-subfolders = ["normal_path", "normal_action", "normal_body", "google", "rpc"]
+# ---------------- Directory Setup ----------------
+def setup_directory_structure() -> None:
+    """Create the required directory structure for JSON configs."""
+    sections = ["get", "set", "remove"]
+    subfolders = ["normal_path", "normal_action", "normal_body", "google", "rpc"]
 
-for sec in sections:
-    for sub in subfolders:
-        os.makedirs(os.path.join(JSON_FOLDER, sec, sub), exist_ok=True)
-    os.makedirs(os.path.join(JSON_FOLDER, sec, "unhappy"), exist_ok=True)
+    for section in sections:
+        for subfolder in subfolders:
+            os.makedirs(os.path.join(JSON_FOLDER, section, subfolder), exist_ok=True)
+        os.makedirs(os.path.join(JSON_FOLDER, section, "unhappy"), exist_ok=True)
 
 
-# ---------------- Preset creators ----------------
-def create_presets(endpoints: List[str], payloads: Dict[str, Any], section: str) -> List[Dict[str, Any]]:
+# ---------------- Preset Generation ----------------
+def create_normal_presets(endpoints: List[str], payloads: Dict[str, Any], section: str) -> List[Dict[str, Any]]:
+    """Create normal test presets for given endpoints."""
     presets = []
     formats = {
         "Normal_Path": "normal_path",
@@ -189,131 +219,138 @@ def create_presets(endpoints: List[str], payloads: Dict[str, Any], section: str)
     }
 
     for endpoint in endpoints:
-        method = endpoint.split("/")[-1]
+        method = get_method_from_endpoint(endpoint)
         params = payloads.get(method, {})
 
-        for fmt, subfolder in formats.items():
-            file_name = f"{method}_{fmt}.json"
+        for format_name, subfolder in formats.items():
+            file_name = f"{method}_{format_name}.json"
             file_path = os.path.join(JSON_FOLDER, section, subfolder, file_name)
             json_file_relative = os.path.relpath(file_path, JSON_FOLDER).replace("\\", "/")
 
-            if fmt == "Normal_Body":
+            # Generate payload based on format
+            if format_name == "Normal_Body":
                 payload = {method: params}
-            elif fmt == "Google":
-                payload = {"apiVersion": "1.5", "method": method, "params": params, "context": GOOGLE_CONTEXT}
-            elif fmt == "RPC":
-                payload = {"jsonrpc": "2.0", "method": method, "params": params, "id": ID_RPC}
+            elif format_name == "Google":
+                payload = {
+                    "apiVersion": "1.5",
+                    "method": method,
+                    "params": params,
+                    "context": GOOGLE_CONTEXT
+                }
+            elif format_name == "RPC":
+                payload = {
+                    "jsonrpc": "2.0",
+                    "method": method,
+                    "params": params,
+                    "id": ID_RPC
+                }
             else:
                 payload = params
 
             save_json(file_path, payload)
 
-            endpoint_url = (
-                f"{endpoint}?action={method}" if fmt == "Normal_Action"
-                else endpoint if fmt == "Normal_Path"
-                else "/".join(endpoint.split("/")[:-1])
-            )
+            # Generate endpoint URL based on format
+            if format_name == "Normal_Action":
+                endpoint_url = f"{endpoint}?action={method}"
+            elif format_name == "Normal_Path":
+                endpoint_url = endpoint
+            else:  # Normal_Body, Google, RPC
+                endpoint_url = "/".join(endpoint.split("/")[:-1])
+
             summary["normal"] += 1
 
             presets.append({
-                "name": f"{method}_{fmt}",
+                "name": f"{method}_{format_name}",
                 "endpoint": endpoint_url,
                 "json_file": json_file_relative,
                 "simple_format": False,
-                "json_type": "normal" if fmt.startswith("Normal") else fmt.lower(),
+                "json_type": "normal" if format_name.startswith("Normal") else format_name.lower(),
             })
 
     return presets
 
 
 def create_unhappy_tests(endpoints: List[str], payloads: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Create unhappy path test presets for error testing."""
     unhappy_presets = []
+    test_types = [
+        ("no_data", create_unhappy_payload, "unhappy_no_data"),
+        ("invalid_data", create_invalid_payload, "unhappy_invalid"),
+        ("wrong_type", create_wrong_type_payload, "unhappy_wrong_type"),
+        ("fuzz", create_fuzz_payload, "unhappy_fuzz")
+    ]
 
     for endpoint in endpoints:
-        method = endpoint.split("/")[-1]
+        method = get_method_from_endpoint(endpoint)
         params = payloads.get(method) or SPECIAL_PARAMS.get(method)
         if not params:
             continue
 
-        section = "get" if endpoint in GET_ENDPOINTS else "set" if endpoint in SET_ENDPOINTS else "remove"
+        section = get_section_from_endpoint(endpoint)
         folder = os.path.join(JSON_FOLDER, section, "unhappy")
 
-        # NO DATA
-        no_data = make_unhappy_payload(params)
-        no_file = os.path.join(folder, f"{method}_unhappy_no_data.json")
-        save_json(no_file, no_data)
-        unhappy_presets.append({
-            "name": f"{method}_unhappy_no_data",
-            "endpoint": endpoint,
-            "json_file": os.path.relpath(no_file, JSON_FOLDER).replace("\\", "/"),
-            "simple_format": False,
-            "json_type": "normal"
-        })
-        summary["unhappy_no_data"] += 1
-
-        # INVALID
-        invalid = make_invalid_payload(params)
-        invalid_file = os.path.join(folder, f"{method}_unhappy_invalid_data.json")
-        save_json(invalid_file, invalid)
-        unhappy_presets.append({
-            "name": f"{method}_unhappy_invalid_data",
-            "endpoint": endpoint,
-            "json_file": os.path.relpath(invalid_file, JSON_FOLDER).replace("\\", "/"),
-            "simple_format": False,
-            "json_type": "normal"
-        })
-        summary["unhappy_invalid"] += 1
-
-        # WRONG TYPE
-        wrong_type = make_wrong_type_payload(params)
-        wrong_type_file = os.path.join(folder, f"{method}_unhappy_wrong_type.json")
-        save_json(wrong_type_file, wrong_type)
-        unhappy_presets.append({
-            "name": f"{method}_unhappy_wrong_type",
-            "endpoint": endpoint,
-            "json_file": os.path.relpath(wrong_type_file, JSON_FOLDER).replace("\\", "/"),
-            "simple_format": False,
-            "json_type": "normal"
-        })
-        summary["unhappy_wrong_type"] += 1
-
-        # FUZZ
-        fuzz = make_fuzz_payload(params)
-        fuzz_file = os.path.join(folder, f"{method}_unhappy_fuzz.json")
-        save_json(fuzz_file, fuzz)
-        unhappy_presets.append({
-            "name": f"{method}_unhappy_fuzz",
-            "endpoint": endpoint,
-            "json_file": os.path.relpath(fuzz_file, JSON_FOLDER).replace("\\", "/"),
-            "simple_format": False,
-            "json_type": "normal"
-        })
-        summary["unhappy_fuzz"] += 1
+        for test_suffix, payload_generator, summary_key in test_types:
+            # Generate test payload
+            test_payload = payload_generator(params)
+            
+            # Create file and preset
+            file_name = f"{method}_unhappy_{test_suffix}.json"
+            file_path = os.path.join(folder, file_name)
+            save_json(file_path, test_payload)
+            
+            unhappy_presets.append({
+                "name": f"{method}_unhappy_{test_suffix}",
+                "endpoint": endpoint,
+                "json_file": os.path.relpath(file_path, JSON_FOLDER).replace("\\", "/"),
+                "simple_format": False,
+                "json_type": "normal"
+            })
+            
+            summary[summary_key] += 1
 
     return unhappy_presets
 
 
-# ---------------- Generate all presets ----------------
-all_presets: List[Dict[str, Any]] = []
+# ---------------- Main Execution ----------------
+def main() -> None:
+    """Main function to generate all test presets."""
+    print("🚀 Starting API test preset generation...")
+    
+    # Setup directory structure
+    setup_directory_structure()
+    print("📁 Directory structure created")
+    
+    # Generate all presets
+    all_presets: List[Dict[str, Any]] = []
+    
+    # Normal presets
+    all_presets += create_normal_presets(GET_ENDPOINTS, SPECIAL_PARAMS, "get")
+    all_presets += create_normal_presets(SET_ENDPOINTS, SET_PAYLOADS, "set")
+    all_presets += create_normal_presets(REMOVE_ENDPOINTS, REMOVE_PAYLOADS, "remove")
+    print("✅ Normal presets generated")
+    
+    # Unhappy presets
+    all_payloads = {**SET_PAYLOADS, **SPECIAL_PARAMS, **REMOVE_PAYLOADS}
+    all_endpoints = GET_ENDPOINTS + SET_ENDPOINTS + REMOVE_ENDPOINTS
+    all_presets += create_unhappy_tests(all_endpoints, all_payloads)
+    print("🔧 Unhappy test presets generated")
+    
+    # Save presets file
+    with open(PRESETS_FILE, "w", encoding="utf-8") as f:
+        json.dump(all_presets, f, indent=2)
+    print(f"💾 Presets saved to {PRESETS_FILE}")
+    
+    # Print summary
+    total_tests = sum(summary.values())
+    print("\n📊 TEST GENERATION SUMMARY")
+    print(f"   Normal tests:        {summary['normal']}")
+    print(f"   Unhappy no data:     {summary['unhappy_no_data']}")
+    print(f"   Unhappy invalid:     {summary['unhappy_invalid']}")
+    print(f"   Unhappy wrong type:  {summary['unhappy_wrong_type']}")
+    print(f"   Unhappy fuzz:        {summary['unhappy_fuzz']}")
+    print(f"   TOTAL TESTS:         {total_tests}")
+    print("\n✅ All presets generated successfully!")
 
-all_presets += create_presets(GET_ENDPOINTS, SPECIAL_PARAMS, "get")
-all_presets += create_presets(SET_ENDPOINTS, SET_PAYLOADS, "set")
-all_presets += create_presets(REMOVE_ENDPOINTS, REMOVE_PAYLOADS, "remove")
 
-all_presets += create_unhappy_tests(
-    GET_ENDPOINTS + SET_ENDPOINTS + REMOVE_ENDPOINTS,
-    {**SET_PAYLOADS, **SPECIAL_PARAMS, **REMOVE_PAYLOADS}
-)
-
-with open(PRESETS_FILE, "w", encoding="utf-8") as f:
-    json.dump(all_presets, f, indent=2)
-
-total_tests = sum(summary.values())
-print("✅ Presets + unhappy variants generated successfully")
-print("📊 TEST GENERATION SUMMARY")
-print(f"   Normal tests:        {summary['normal']}")
-print(f"   Unhappy no data:     {summary['unhappy_no_data']}")
-print(f"   Unhappy invalid:     {summary['unhappy_invalid']}")
-print(f"   Unhappy wrong type:  {summary['unhappy_wrong_type']}")
-print(f"   Unhappy fuzz:        {summary['unhappy_fuzz']}")
-print(f"   TOTAL TESTS:         {total_tests}")
+if __name__ == "__main__":
+    main()

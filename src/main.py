@@ -3,7 +3,8 @@ import sys
 from PySide6.QtGui import QColor, QPalette
 from PySide6.QtWidgets import QApplication
 
-from app import VapixApp
+from app import ApiTestApp
+
 
 
 def create_light_palette() -> QPalette:
@@ -21,7 +22,7 @@ def main() -> int:
     # Optional light palette
     app.setPalette(create_light_palette())
 
-    win = VapixApp()
+    win = ApiTestApp()
     win.show()
 
     return app.exec()

@@ -12,7 +12,7 @@ from presets import PresetManager
 from requests_manager import RequestManager
 
 
-class VapixApp(QWidget):
+class ApiTestApp(QWidget):
     # ================= Init =================
 
     def __init__(self) -> None:
@@ -74,7 +74,7 @@ class VapixApp(QWidget):
         self.test_mode_combo.currentTextChanged.connect(self.update_presets_list)
 
         self.endpoint_combo = QComboBox()
-        self.endpoint_combo.addItems(VAPIX_ENDPOINTS)
+        self.endpoint_combo.addItems(API_ENDPOINTS)
 
         self.json_combo = QComboBox()
         self.json_combo.addItem("(none)")

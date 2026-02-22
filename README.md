@@ -1,4 +1,4 @@
-# VAPIX Test Tool
+# API Test Tool
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![PySide6](https://img.shields.io/badge/UI-PySide6-green)
@@ -8,8 +8,8 @@
 
 ## Overview
 
-**VAPIX Test Tool** is a desktop QA utility for testing **Axis VAPIX API
-endpoints**.\
+**API Test Tool** is a desktop QA utility for testing **REST API
+endpoints**.
 It allows engineers and testers to:
 
 -   Send single API requests
@@ -24,7 +24,7 @@ It allows engineers and testers to:
 
 ### API Testing
 
--   Supports **GET / SET / REMOVE** VAPIX endpoints
+-   Supports **GET / SET / REMOVE** API endpoints
 -   Sends authenticated HTTP Digest requests
 -   Displays formatted JSON responses in UI
 
@@ -101,7 +101,7 @@ The project can be packaged using **PyInstaller**.
 ### Build command
 
 ``` bash
-pyinstaller --onefile --noconsole --icon=vapix_icon.ico main.py
+pyinstaller --onefile --noconsole --icon=api_tester_icon.ico main.py
 ```
 
 ### Output
@@ -151,4 +151,4 @@ MIT License --- free to use in internal QA and automation workflows.
 
 ## Author
 
-Developed for **Axis VAPIX QA automation & testing workflows**.
+Developed for **REST API QA automation & testing workflows**.
