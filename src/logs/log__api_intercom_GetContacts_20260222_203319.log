@@ -1,0 +1,4 @@
+
+--- 2026-02-22 20:33:19 ---
+Tag: err
+Request Error: ('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))

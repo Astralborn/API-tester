@@ -33,7 +33,6 @@ class UIBuilderMixin:
                 background-color: #ffffff;
                 color: #1a1a1a;
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-                font-size: 13px;
                 border: none;
             }
 
@@ -43,6 +42,10 @@ class UIBuilderMixin:
                 border-radius: 4px;
                 padding: 6px 10px;
                 min-height: 28px;
+            }
+
+            QLineEdit:hover, QComboBox:hover {
+                border-color: #c0c0c0;
             }
 
             QLineEdit:focus, QComboBox:focus {
@@ -68,20 +71,26 @@ class UIBuilderMixin:
             }
 
             QPushButton {
-                background-color: #1a1a1a;
+                background-color: #0066cc;
                 color: #ffffff;
                 border: none;
-                border-radius: 4px;
-                padding: 8px 16px;
+                border-radius: 20px;
+                padding: 6px 16px;
                 font-weight: 500;
+                min-height: 32px;
             }
 
             QPushButton:hover {
-                background-color: #333333;
+                background-color: #0052a3;
             }
 
             QPushButton:pressed {
-                background-color: #000000;
+                background-color: #003d7a;
+            }
+
+            QPushButton:focus {
+                outline: none;
+                border: 2px solid #80b3ff;
             }
 
             QPushButton:disabled {
@@ -91,30 +100,38 @@ class UIBuilderMixin:
 
             QPushButton#secondary {
                 background-color: transparent;
-                color: #1a1a1a;
-                border: 1px solid #d0d0d0;
+                color: #0066cc;
+                border: 1.5px solid #0066cc;
             }
 
             QPushButton#secondary:hover {
-                background-color: #f5f5f5;
-                border-color: #b0b0b0;
+                background-color: #e6f0fa;
+            }
+
+            QPushButton#secondary:focus {
+                border: 2px solid #80b3ff;
             }
 
             QCheckBox {
-                spacing: 6px;
+                spacing: 8px;
             }
 
             QCheckBox::indicator {
-                width: 16px;
-                height: 16px;
-                border: 1px solid #d0d0d0;
-                border-radius: 3px;
+                width: 18px;
+                height: 18px;
+                border: 2px solid #d0d0d0;
+                border-radius: 4px;
                 background-color: #ffffff;
             }
 
+            QCheckBox::indicator:hover {
+                border-color: #0066cc;
+            }
+
             QCheckBox::indicator:checked {
-                background-color: #1a1a1a;
-                border-color: #1a1a1a;
+                background-color: #0066cc;
+                border-color: #0066cc;
+                image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEwIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEgNEwzLjUgNi41TDkgMS41IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==);
             }
 
             QTextEdit {
@@ -122,8 +139,7 @@ class UIBuilderMixin:
                 border: 1px solid #e0e0e0;
                 border-radius: 4px;
                 padding: 12px;
-                font-family: 'SF Mono', Monaco, 'Cascadia Code', Consolas, monospace;
-                font-size: 12px;
+                font-family: Consolas, Monaco, 'Cascadia Code', monospace;
                 line-height: 1.5;
             }
 
@@ -134,18 +150,17 @@ class UIBuilderMixin:
 
             QLabel {
                 color: #666666;
-                font-size: 12px;
             }
 
             QLabel#header {
                 color: #1a1a1a;
-                font-size: 20px;
+                font-size: 20pt;
                 font-weight: 600;
             }
 
             QLabel#section {
-                color: #666666;
-                font-size: 11px;
+                color: #0066cc;
+                font-size: 11pt;
                 font-weight: 600;
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
@@ -228,12 +243,12 @@ class UIBuilderMixin:
 
         btn_load = QPushButton("Load")
         btn_load.setObjectName("secondary")
-        btn_load.setFixedWidth(60)
+        btn_load.setFixedWidth(80)
         btn_load.clicked.connect(self.load_preset)
 
         btn_save = QPushButton("Save")
         btn_save.setObjectName("secondary")
-        btn_save.setFixedWidth(60)
+        btn_save.setFixedWidth(80)
         btn_save.clicked.connect(self.save_preset)
 
         preset_row.addWidget(self.test_mode_combo)
@@ -262,15 +277,17 @@ class UIBuilderMixin:
         self.json_type_combo.setFixedWidth(100)
         self.json_type_combo.currentTextChanged.connect(self._auto_save_ui_settings)
 
-        self.json_combo = QComboBox()
-        self.json_combo.addItem("(none)")
-        self.json_combo.setFixedWidth(150)
-
         req_row.addWidget(self.endpoint_combo, 1)
         req_row.addWidget(self.json_type_combo)
-        req_row.addWidget(self.json_combo)
 
         outer.addLayout(req_row)
+        outer.addSpacing(8)
+
+        # JSON File - full width on its own row
+        self.json_combo = QComboBox()
+        self.json_combo.addItem("(none)")
+
+        outer.addWidget(self.json_combo)
         outer.addSpacing(16)
 
         # ===== Action Buttons =====
@@ -278,23 +295,29 @@ class UIBuilderMixin:
         action_row.setSpacing(8)
 
         self.btn_send = QPushButton("Send")
-        self.btn_send.setFixedWidth(100)
+        self.btn_send.setFixedWidth(120)
         self.btn_send.clicked.connect(self.send_request)
 
         self.btn_multi = QPushButton("Run Multiple")
         self.btn_multi.setObjectName("secondary")
-        self.btn_multi.setFixedWidth(100)
+        self.btn_multi.setFixedWidth(120)
         self.btn_multi.clicked.connect(self.run_multiple)
 
         self.btn_cancel = QPushButton("Cancel")
         self.btn_cancel.setObjectName("secondary")
-        self.btn_cancel.setFixedWidth(80)
+        self.btn_cancel.setFixedWidth(100)
         self.btn_cancel.setEnabled(False)
         self.btn_cancel.clicked.connect(self.cancel_all_requests)
+
+        self.btn_clear = QPushButton("Clear")
+        self.btn_clear.setObjectName("secondary")
+        self.btn_clear.setFixedWidth(80)
+        self.btn_clear.clicked.connect(self.clear_response)
 
         action_row.addWidget(self.btn_send)
         action_row.addWidget(self.btn_multi)
         action_row.addStretch()
+        action_row.addWidget(self.btn_clear)
         action_row.addWidget(self.btn_cancel)
 
         outer.addLayout(action_row)
@@ -307,16 +330,10 @@ class UIBuilderMixin:
         resp_header.addWidget(resp_label)
         resp_header.addStretch()
 
-        btn_clear = QPushButton("Clear")
-        btn_clear.setObjectName("secondary")
-        btn_clear.setFixedWidth(60)
-        btn_clear.clicked.connect(self.clear_response)
-        resp_header.addWidget(btn_clear)
-
         outer.addLayout(resp_header)
 
         self.response = QTextEdit(readOnly=True)
-        self.response.setFont(QFont("SF Mono", 10))
+        self.response.setFont(QFont("Consolas", 10))
         self.response.setLineWrapMode(QTextEdit.NoWrap)
         self.response.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 

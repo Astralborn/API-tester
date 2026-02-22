@@ -138,40 +138,12 @@ class RequestHandlingMixin:
         except Exception:
             pass
 
-        # Determine background color based on response tag
-        bg_colors = {
-            "ok": "#e6f4ea",      # Green for success
-            "warn": "#fef7e0",    # Yellow for warnings  
-            "err": "#fce8e6"       # Red for errors
-        }
-        bg_color = bg_colors.get(tag, "#f8f9fa")
+        # Minimal separator and response styling
+        separator = '<div style="border-top: 1px solid #c0c0c0; margin: 4px 0;"></div>'
+        header = f'<div style="font-weight: 600; color: #666666; margin-bottom: 8px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">{preset_name or "Request"} — {tag.upper()}</div>'
+        body = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\n", "<br>")
         
-        # Create styled HTML response
-        html = f'''
-        <div style="
-            background-color: {bg_color};
-            border-left: 4px solid {'#34a853' if tag == 'ok' else '#fbbc04' if tag == 'warn' else '#ea4335'};
-            margin: 8px 0;
-            padding: 12px;
-            border-radius: 4px;
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 12px;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        ">
-            <div style="
-                font-weight: bold; 
-                color: #202124; 
-                margin-bottom: 8px;
-                font-size: 13px;
-            ">
-                {preset_name or 'Request'} - {tag.upper()}
-            </div>
-            <div style="color: #5f6368; line-height: 1.4;">
-                {text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace(chr(10), "<br>")}
-            </div>
-        </div>
-        '''
+        html = f'{separator}<div style="font-family: Consolas, monospace; font-size: 12px; line-height: 1.5; color: #333333;">{header}{body}</div>'
         
         self.response.moveCursor(QTextCursor.End)
         self.response.insertHtml(html)

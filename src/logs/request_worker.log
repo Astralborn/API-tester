@@ -1,0 +1,40 @@
+2026-02-22 20:24:08,121 - request_worker - [32mINFO[0m - info:101 - Starting request to http://1.1.1.1/api/intercom/GetContacts
+2026-02-22 20:24:08,414 - request_worker - [32mINFO[0m - info:101 - HTTP POST http://1.1.1.1/api/intercom/GetContacts - 404 - 0.107s
+2026-02-22 20:24:20,410 - request_worker - [32mINFO[0m - info:101 - Starting request to http://1.1.1.1/api/intercom/GetContacts
+2026-02-22 20:24:20,641 - request_worker - [32mINFO[0m - info:101 - HTTP POST http://1.1.1.1/api/intercom/GetContacts - 404 - 0.134s
+2026-02-22 20:24:20,705 - request_worker - [32mINFO[0m - info:101 - Starting request to http://1.1.1.1/api/intercom/GetContacts
+2026-02-22 20:24:20,935 - request_worker - [32mINFO[0m - info:101 - HTTP POST http://1.1.1.1/api/intercom/GetContacts - 404 - 0.097s
+2026-02-22 20:25:40,050 - request_worker - [32mINFO[0m - info:101 - Starting request to http://1.1.1.1/api/intercom/GetContacts
+2026-02-22 20:25:40,232 - request_worker - [32mINFO[0m - info:101 - HTTP POST http://1.1.1.1/api/intercom/GetContacts - 404 - 0.084s
+2026-02-22 20:27:09,408 - request_worker - [32mINFO[0m - info:101 - Starting request to http://1.1.1.1/api/intercom/GetContacts
+2026-02-22 20:27:09,672 - request_worker - [32mINFO[0m - info:101 - HTTP POST http://1.1.1.1/api/intercom/GetContacts - 404 - 0.129s
+2026-02-22 20:27:09,945 - request_worker - [32mINFO[0m - info:101 - Starting request to http://1.1.1.1/api/intercom/GetContacts
+2026-02-22 20:27:10,220 - request_worker - [32mINFO[0m - info:101 - HTTP POST http://1.1.1.1/api/intercom/GetContacts - 404 - 0.166s
+2026-02-22 20:28:42,698 - request_worker - [32mINFO[0m - info:101 - Starting request to http://1.1.1.1/api/intercom/GetContacts
+2026-02-22 20:28:42,878 - request_worker - [32mINFO[0m - info:101 - Starting request to http://1.1.1.1/api/intercom/GetContacts
+2026-02-22 20:28:42,953 - request_worker - [32mINFO[0m - info:101 - HTTP POST http://1.1.1.1/api/intercom/GetContacts - 404 - 0.119s
+2026-02-22 20:28:43,054 - request_worker - [32mINFO[0m - info:101 - Starting request to http://1.1.1.1/api/intercom/GetContacts
+2026-02-22 20:28:43,137 - request_worker - [32mINFO[0m - info:101 - HTTP POST http://1.1.1.1/api/intercom/GetContacts - 404 - 0.120s
+2026-02-22 20:28:43,290 - request_worker - [32mINFO[0m - info:101 - HTTP POST http://1.1.1.1/api/intercom/GetContacts - 404 - 0.110s
+2026-02-22 20:33:19,776 - request_worker - [32mINFO[0m - info:101 - Starting request to http://1.1.1.1/api/intercom/GetContacts
+2026-02-22 20:33:19,807 - request_worker - [31mERROR[0m - error:109 - Request failed: ('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))
+2026-02-22 20:33:25,417 - request_worker - [32mINFO[0m - info:101 - Starting request to http://1.1.1.1/api/intercom/GetContacts
+2026-02-22 20:33:25,627 - request_worker - [32mINFO[0m - info:101 - HTTP POST http://1.1.1.1/api/intercom/GetContacts - 404 - 0.074s
+2026-02-22 20:33:25,872 - request_worker - [32mINFO[0m - info:101 - Starting request to http://1.1.1.1/api/intercom/GetContacts
+2026-02-22 20:33:26,124 - request_worker - [32mINFO[0m - info:101 - HTTP POST http://1.1.1.1/api/intercom/GetContacts - 404 - 0.103s
+2026-02-22 20:33:30,352 - request_worker - [32mINFO[0m - info:101 - Starting request to http://1.1.1.1/api/intercom/GetContacts
+2026-02-22 20:33:30,541 - request_worker - [32mINFO[0m - info:101 - HTTP POST http://1.1.1.1/api/intercom/GetContacts - 404 - 0.062s
+2026-02-22 20:33:32,256 - request_worker - [32mINFO[0m - info:101 - Starting request to http://1.1.1.1/api/intercom/GetContacts
+2026-02-22 20:33:32,488 - request_worker - [32mINFO[0m - info:101 - HTTP POST http://1.1.1.1/api/intercom/GetContacts - 404 - 0.088s
+2026-02-22 20:36:09,953 - request_worker - [32mINFO[0m - info:101 - Starting request to http://1.1.1.1/api/intercom/GetContacts
+2026-02-22 20:36:10,151 - request_worker - [32mINFO[0m - info:101 - HTTP POST http://1.1.1.1/api/intercom/GetContacts - 404 - 0.123s
+2026-02-22 20:36:11,766 - request_worker - [32mINFO[0m - info:101 - Starting request to http://1.1.1.1/api/intercom/GetContacts
+2026-02-22 20:36:12,068 - request_worker - [32mINFO[0m - info:101 - HTTP POST http://1.1.1.1/api/intercom/GetContacts - 404 - 0.136s
+2026-02-22 20:37:55,113 - request_worker - [32mINFO[0m - info:101 - Starting request to http://1.1.1.1/api/intercom/GetContacts
+2026-02-22 20:37:55,428 - request_worker - [32mINFO[0m - info:101 - HTTP POST http://1.1.1.1/api/intercom/GetContacts - 404 - 0.086s
+2026-02-22 20:37:57,002 - request_worker - [32mINFO[0m - info:101 - Starting request to http://1.1.1.1/api/intercom/GetContacts
+2026-02-22 20:37:57,207 - request_worker - [32mINFO[0m - info:101 - HTTP POST http://1.1.1.1/api/intercom/GetContacts - 404 - 0.093s
+2026-02-22 20:43:40,008 - request_worker - [32mINFO[0m - info:101 - Starting request to http://1.1.1.1/api/intercom/GetContacts
+2026-02-22 20:43:40,282 - request_worker - [32mINFO[0m - info:101 - HTTP POST http://1.1.1.1/api/intercom/GetContacts - 404 - 0.155s
+2026-02-22 20:43:53,349 - request_worker - [32mINFO[0m - info:101 - Starting request to http://1.1.1.1/api/intercom/GetContacts
+2026-02-22 20:43:53,539 - request_worker - [32mINFO[0m - info:101 - HTTP POST http://1.1.1.1/api/intercom/GetContacts - 404 - 0.079s
