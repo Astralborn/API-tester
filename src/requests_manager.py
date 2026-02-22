@@ -10,6 +10,7 @@ import requests
 from PySide6.QtCore import QThread, Signal
 
 from constants import JSON_FOLDER, LOGS_FOLDER
+from logging_system import get_logger
 
 
 # Ensure logs directory exists
@@ -50,12 +51,22 @@ class RequestWorker(QThread):
         self.preset_name = preset_name
         self.json_type = json_type
         self.log_file = log_file
+        
+        # Initialize logger for this request
+        self.logger = get_logger("request_worker")
 
     # ---------- Main thread execution ----------
 
     def run(self) -> None:
         """Execute HTTP request and emit result."""
         self._ensure_log_file()
+        
+        # Log request start
+        self.logger.info(f"Starting request to {self.url}", 
+                        url=self.url, 
+                        user=self.user,
+                        preset_name=self.preset_name,
+                        payload_size=len(json.dumps(self.payload)))
 
         try:
             response = requests.post(
@@ -75,10 +86,23 @@ class RequestWorker(QThread):
             )
 
             tag = "ok" if response.status_code == 200 else "warn"
+            
+            # Log successful request
+            self.logger.log_request("POST", self.url, response.status_code, 
+                                   response.elapsed.total_seconds(),
+                                   preset_name=self.preset_name,
+                                   response_size=len(response.text))
 
         except requests.exceptions.RequestException as exc:
             text = f"Request Error: {exc}"
             tag = "err"
+            
+            # Log request error
+            self.logger.error(f"Request failed: {exc}", 
+                            url=self.url, 
+                            user=self.user,
+                            preset_name=self.preset_name,
+                            error_type=type(exc).__name__)
 
         self._write_log(text, tag)
         self.finished.emit(text, self.preset_name, tag)

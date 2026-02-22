@@ -4,6 +4,7 @@ from PySide6.QtGui import QColor, QPalette
 from PySide6.QtWidgets import QApplication
 
 from app import ApiTestApp
+from di_container import get_container
 
 
 
@@ -22,7 +23,9 @@ def main() -> int:
     # Optional light palette
     app.setPalette(create_light_palette())
 
-    win = ApiTestApp()
+    # Use dependency injection container (recommended)
+    container = get_container()
+    win = ApiTestApp(container=container)
     win.show()
 
     return app.exec()
