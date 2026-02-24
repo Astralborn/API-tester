@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QFont, QPalette, QColor
+from PySide6.QtGui import QPalette, QColor
 from PySide6.QtWidgets import (
     QApplication, QVBoxLayout, QHBoxLayout,
     QComboBox, QLineEdit, QPushButton, QCheckBox, QTextEdit,
@@ -22,25 +22,23 @@ TEXT_PRIMARY= "#0F0F11"
 TEXT_MUTED  = "#6B7280"
 ACCENT      = "#2563EB"
 ACCENT_HOVER= "#1D4ED8"
-BTN_SEC_BG  = "#FFFFFF"
-BTN_SEC_HVR = "#F0F0F2"
+BTN_BG      = "#FFFFFF"
+BTN_HVR     = "#F0F0F2"
 INPUT_BG    = "#FFFFFF"
 DANGER      = "#DC2626"
 # ──────────────────────────────────────────────────────────────────────────────
 
 
 _GLOBAL_QSS = f"""
-/* ── Base ── */
 QWidget {{
     background-color: {BG};
     color: {TEXT_PRIMARY};
-    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-family: 'Segoe UI', system-ui, sans-serif;
     font-size: 12px;
     border: none;
     outline: none;
 }}
 
-/* ── Inputs ── */
 QLineEdit, QComboBox {{
     background-color: {INPUT_BG};
     border: 1.5px solid {BORDER};
@@ -48,7 +46,6 @@ QLineEdit, QComboBox {{
     padding: 4px 10px;
     min-height: 26px;
     color: {TEXT_PRIMARY};
-    selection-background-color: {ACCENT};
 }}
 QLineEdit:hover, QComboBox:hover {{
     border-color: #BBBBC8;
@@ -61,18 +58,14 @@ QLineEdit::placeholder {{
     color: {TEXT_MUTED};
 }}
 
-/* ── ComboBox ── */
 QComboBox::drop-down {{
-    subcontrol-origin: padding;
-    subcontrol-position: right center;
     width: 28px;
     border: none;
     background: transparent;
 }}
 QComboBox::down-arrow {{
     image: none;
-    width: 0;
-    height: 0;
+    width: 0; height: 0;
     border-left: 4px solid transparent;
     border-right: 4px solid transparent;
     border-top: 5px solid {TEXT_MUTED};
@@ -93,11 +86,10 @@ QComboBox QAbstractItemView::item {{
     border-radius: 4px;
 }}
 
-/* ── Buttons ── */
 QPushButton {{
-    background-color: {ACCENT};
-    color: #FFFFFF;
-    border: none;
+    background-color: {BTN_BG};
+    color: {TEXT_PRIMARY};
+    border: 1.5px solid {BORDER};
     border-radius: 6px;
     padding: 5px 16px;
     font-weight: 600;
@@ -105,31 +97,14 @@ QPushButton {{
     min-height: 28px;
 }}
 QPushButton:hover {{
-    background-color: {ACCENT_HOVER};
-}}
-QPushButton:pressed {{
-    background-color: #1E40AF;
-}}
-QPushButton:disabled {{
-    background-color: #D1D5DB;
-    color: #9CA3AF;
-}}
-
-QPushButton[secondary="true"] {{
-    background-color: {BTN_SEC_BG};
-    color: {TEXT_PRIMARY};
-    border: 1.5px solid {BORDER};
-}}
-QPushButton[secondary="true"]:hover {{
-    background-color: {BTN_SEC_HVR};
+    background-color: {BTN_HVR};
     border-color: #BBBBC8;
 }}
-QPushButton[secondary="true"]:pressed {{
+QPushButton:pressed {{
     background-color: #E5E7EB;
 }}
-QPushButton[secondary="true"]:disabled {{
-    background-color: {BTN_SEC_BG};
-    color: #9CA3AF;
+QPushButton:disabled {{
+    color: #B0B0B8;
     border-color: {BORDER};
 }}
 
@@ -143,12 +118,11 @@ QPushButton[danger="true"]:hover {{
     border-color: {DANGER};
 }}
 QPushButton[danger="true"]:disabled {{
-    color: #9CA3AF;
+    color: #B0B0B8;
     border-color: {BORDER};
     background-color: transparent;
 }}
 
-/* ── Checkbox ── */
 QCheckBox {{
     color: {TEXT_MUTED};
     spacing: 8px;
@@ -169,34 +143,26 @@ QCheckBox::indicator:checked {{
     image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEwIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEgNEwzLjUgNi41TDkgMS41IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlbGluZWpvaW49InJvdW5kIi8+PC9zdmc+);
 }}
 
-/* ── TextEdit (response pane) ── */
 QTextEdit {{
     background-color: {CARD_BG};
     border: none;
     padding: 16px;
-    font-family: 'Cascadia Code', 'Fira Code', Consolas, Monaco, monospace;
+    font-family: Consolas, Monaco, monospace;
     font-size: 12px;
-    line-height: 1.6;
     color: {TEXT_PRIMARY};
 }}
 
-/* ── Scroll bars ── */
 QScrollBar:vertical {{
     background: transparent;
     width: 8px;
-    margin: 0;
 }}
 QScrollBar::handle:vertical {{
     background: #D1D5DB;
     border-radius: 4px;
     min-height: 24px;
 }}
-QScrollBar::handle:vertical:hover {{
-    background: #9CA3AF;
-}}
-QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
-    height: 0;
-}}
+QScrollBar::handle:vertical:hover {{ background: #9CA3AF; }}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0; }}
 QScrollBar:horizontal {{
     background: transparent;
     height: 8px;
@@ -206,29 +172,37 @@ QScrollBar::handle:horizontal {{
     border-radius: 4px;
     min-width: 24px;
 }}
-QScrollBar::handle:horizontal:hover {{
-    background: #9CA3AF;
-}}
-QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{
-    width: 0;
-}}
+QScrollBar::handle:horizontal:hover {{ background: #9CA3AF; }}
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{ width: 0; }}
 
-/* ── Splitter handle ── */
 QSplitter::handle {{
     background-color: {BORDER};
     width: 1px;
 }}
 """
 
+_card_counter = [0]
 
-def _card(layout_cls=QVBoxLayout, spacing: int = 7, margins=(12, 10, 12, 10)) -> tuple[QFrame, QVBoxLayout | QHBoxLayout]:
-    """Return a white card frame + its inner layout."""
-    frame = QFrame()
+
+def _card(layout_cls=QVBoxLayout, spacing: int = 7, margins=(12, 10, 12, 10)):
+    """Return a bordered card widget."""
+    _card_counter[0] += 1
+    name = f"card_{_card_counter[0]}"
+    frame = QWidget()
+    frame.setObjectName(name)
     frame.setStyleSheet(f"""
-        QFrame {{
-            background-color: {CARD_BG};
+        QWidget#{name} {{
+            background-color: {SIDEBAR_BG};
             border: 1.5px solid {BORDER};
             border-radius: 10px;
+        }}
+        QWidget#{name} QLabel {{
+            border: none;
+            background: transparent;
+        }}
+        QWidget#{name} QCheckBox {{
+            border: none;
+            background: transparent;
         }}
     """)
     lay = layout_cls(frame)
@@ -239,32 +213,13 @@ def _card(layout_cls=QVBoxLayout, spacing: int = 7, margins=(12, 10, 12, 10)) ->
 
 def _section_label(text: str) -> QLabel:
     lbl = QLabel(text.upper())
-    lbl.setStyleSheet(f"""
-        QLabel {{
-            color: {TEXT_MUTED};
-            font-size: 9px;
-            font-weight: 700;
-            letter-spacing: 1.0px;
-            background: transparent;
-            border: none;
-            padding: 0;
-        }}
-    """)
+    lbl.setStyleSheet("color: #9CA3AF; font-size: 9px; font-weight: 700; letter-spacing: 1px; border: none; background: transparent; padding: 0;")
     return lbl
 
 
 def _field_label(text: str) -> QLabel:
     lbl = QLabel(text)
-    lbl.setStyleSheet(f"""
-        QLabel {{
-            color: {TEXT_PRIMARY};
-            font-size: 11px;
-            font-weight: 600;
-            background: transparent;
-            border: none;
-            padding: 0;
-        }}
-    """)
+    lbl.setStyleSheet("font-weight: 600; border: none; background: transparent; padding: 0;")
     return lbl
 
 
@@ -276,9 +231,7 @@ def _sep() -> QFrame:
 
 
 class UIBuilderMixin:
-    """Mixin providing the modern two-panel UI."""
 
-    # ── theme ──────────────────────────────────────────────────────────────────
     def apply_light_theme(self) -> None:
         palette = QPalette()
         palette.setColor(QPalette.Window,          QColor(SIDEBAR_BG))
@@ -286,18 +239,15 @@ class UIBuilderMixin:
         palette.setColor(QPalette.AlternateBase,   QColor(BG))
         palette.setColor(QPalette.Text,            QColor(TEXT_PRIMARY))
         palette.setColor(QPalette.WindowText,      QColor(TEXT_PRIMARY))
-        palette.setColor(QPalette.Button,          QColor(BTN_SEC_BG))
+        palette.setColor(QPalette.Button,          QColor(BTN_BG))
         palette.setColor(QPalette.ButtonText,      QColor(TEXT_PRIMARY))
         palette.setColor(QPalette.Highlight,       QColor(ACCENT))
         palette.setColor(QPalette.HighlightedText, QColor("#ffffff"))
         QApplication.setPalette(palette)
         self.setStyleSheet(_GLOBAL_QSS)
 
-    # ── build ──────────────────────────────────────────────────────────────────
     def build_ui(self) -> None:
-        """Build the two-panel UI: sidebar (controls) + main (response)."""
 
-        # Root horizontal splitter
         root = QHBoxLayout(self)
         root.setContentsMargins(0, 0, 0, 0)
         root.setSpacing(0)
@@ -306,42 +256,38 @@ class UIBuilderMixin:
         splitter.setChildrenCollapsible(False)
         root.addWidget(splitter)
 
-        # ── LEFT SIDEBAR ──────────────────────────────────────────────────────
+        # ── SIDEBAR ───────────────────────────────────────────────────────────
         sidebar = QWidget()
         sidebar.setMinimumWidth(300)
         sidebar.setMaximumWidth(400)
         sidebar.setStyleSheet(f"background-color: {SIDEBAR_BG};")
-        sidebar_layout = QVBoxLayout(sidebar)
-        sidebar_layout.setContentsMargins(14, 14, 14, 12)
-        sidebar_layout.setSpacing(8)
+        sl = QVBoxLayout(sidebar)
+        sl.setContentsMargins(14, 14, 14, 12)
+        sl.setSpacing(8)
 
-        # Logo / title
+        # Title
         logo_row = QHBoxLayout()
         logo_row.setContentsMargins(0, 0, 0, 0)
         dot = QLabel("●")
-        dot.setStyleSheet(f"color: {ACCENT}; font-size: 13px; background: transparent; border: none; padding: 0;")
+        dot.setStyleSheet(f"color: {ACCENT}; font-size: 13px; background: transparent; border: none;")
         title = QLabel("API Tester")
         title.setStyleSheet(f"color: {TEXT_PRIMARY}; font-size: 15px; font-weight: 700; background: transparent; border: none; padding: 0 0 0 5px;")
         logo_row.addWidget(dot)
         logo_row.addWidget(title)
         logo_row.addStretch()
-        sidebar_layout.addLayout(logo_row)
+        sl.addLayout(logo_row)
 
-        # ── CONNECTION CARD ───────────────────────────────────────────────────
+        # CONNECTION
         conn_card, conn_lay = _card(QVBoxLayout, spacing=6)
         conn_lay.addWidget(_section_label("Connection"))
-
-        # IP
         conn_lay.addWidget(_field_label("Device IP"))
         self.ip_edit = QLineEdit()
         self.ip_edit.setPlaceholderText("192.168.1.100")
         self.ip_edit.textChanged.connect(self._auto_save_connection_settings)
         conn_lay.addWidget(self.ip_edit)
 
-        # User / Pass row
         creds_row = QHBoxLayout()
         creds_row.setSpacing(6)
-
         user_col = QVBoxLayout()
         user_col.setSpacing(3)
         user_col.addWidget(_field_label("Username"))
@@ -349,7 +295,6 @@ class UIBuilderMixin:
         self.user_edit.setPlaceholderText("username")
         self.user_edit.textChanged.connect(self._auto_save_connection_settings)
         user_col.addWidget(self.user_edit)
-
         pass_col = QVBoxLayout()
         pass_col.setSpacing(3)
         pass_col.addWidget(_field_label("Password"))
@@ -357,7 +302,6 @@ class UIBuilderMixin:
         self.pass_edit.setPlaceholderText("••••••")
         self.pass_edit.setEchoMode(QLineEdit.Password)
         pass_col.addWidget(self.pass_edit)
-
         creds_row.addLayout(user_col)
         creds_row.addLayout(pass_col)
         conn_lay.addLayout(creds_row)
@@ -365,14 +309,11 @@ class UIBuilderMixin:
         self.simple_check = QCheckBox("Simple response format")
         self.simple_check.toggled.connect(self._auto_save_connection_settings)
         conn_lay.addWidget(self.simple_check)
+        sl.addWidget(conn_card)
 
-        sidebar_layout.addWidget(conn_card)
-
-        # ── PRESET CARD ───────────────────────────────────────────────────────
+        # PRESET
         preset_card, preset_lay = _card(QVBoxLayout, spacing=6)
         preset_lay.addWidget(_section_label("Preset"))
-
-        # Mode + Search row
         filter_row = QHBoxLayout()
         filter_row.setSpacing(6)
         self.test_mode_combo = QComboBox()
@@ -381,11 +322,9 @@ class UIBuilderMixin:
         self.test_mode_combo.setMaximumWidth(110)
         self.test_mode_combo.currentTextChanged.connect(self.update_presets_list)
         self.test_mode_combo.currentTextChanged.connect(self._auto_save_ui_settings)
-
         self.preset_search = QLineEdit()
         self.preset_search.setPlaceholderText("Search presets…")
         self.preset_search.textChanged.connect(self.update_presets_list)
-
         filter_row.addWidget(self.test_mode_combo)
         filter_row.addWidget(self.preset_search, 1)
         preset_lay.addLayout(filter_row)
@@ -398,22 +337,18 @@ class UIBuilderMixin:
         ps_btn_row = QHBoxLayout()
         ps_btn_row.setSpacing(6)
         btn_load = QPushButton("Load")
-        btn_load.setProperty("secondary", True)
         btn_load.clicked.connect(self.load_preset)
         btn_save = QPushButton("Save")
-        btn_save.setProperty("secondary", True)
         btn_save.clicked.connect(self.save_preset)
         ps_btn_row.addWidget(btn_load)
         ps_btn_row.addWidget(btn_save)
         ps_btn_row.addStretch()
         preset_lay.addLayout(ps_btn_row)
+        sl.addWidget(preset_card)
 
-        sidebar_layout.addWidget(preset_card)
-
-        # ── REQUEST CARD ──────────────────────────────────────────────────────
+        # REQUEST
         req_card, req_lay = _card(QVBoxLayout, spacing=6)
         req_lay.addWidget(_section_label("Request"))
-
         req_lay.addWidget(_field_label("Endpoint"))
         self.endpoint_combo = QComboBox()
         self.endpoint_combo.addItems(API_ENDPOINTS)
@@ -422,113 +357,106 @@ class UIBuilderMixin:
 
         bottom_req_row = QHBoxLayout()
         bottom_req_row.setSpacing(6)
-
         json_col = QVBoxLayout()
         json_col.setSpacing(3)
         json_col.addWidget(_field_label("JSON File"))
         self.json_combo = QComboBox()
         self.json_combo.addItem("(none)")
+        self.json_combo.setMinimumWidth(160)
+        self.json_combo.setSizeAdjustPolicy(QComboBox.AdjustToMinimumContentsLengthWithIcon)
         json_col.addWidget(self.json_combo)
-
         type_col = QVBoxLayout()
         type_col.setSpacing(3)
         type_col.addWidget(_field_label("Type"))
         self.json_type_combo = QComboBox()
         self.json_type_combo.addItems(["normal", "google", "rpc"])
-        self.json_type_combo.setMinimumWidth(85)
-        self.json_type_combo.setMaximumWidth(100)
+        self.json_type_combo.setFixedWidth(80)
         self.json_type_combo.currentTextChanged.connect(self._auto_save_ui_settings)
         type_col.addWidget(self.json_type_combo)
-
         bottom_req_row.addLayout(json_col, 1)
         bottom_req_row.addLayout(type_col)
         req_lay.addLayout(bottom_req_row)
+        sl.addWidget(req_card)
 
-        sidebar_layout.addWidget(req_card)
-
-        # ── ACTIONS ───────────────────────────────────────────────────────────
+        # ACTIONS
         self.btn_send = QPushButton("Send Request")
         self.btn_send.setFixedHeight(34)
         self.btn_send.clicked.connect(self.send_request)
-        sidebar_layout.addWidget(self.btn_send)
+        sl.addWidget(self.btn_send)
 
         sec_actions = QHBoxLayout()
         sec_actions.setSpacing(6)
         self.btn_multi = QPushButton("Run Multiple")
-        self.btn_multi.setProperty("secondary", True)
         self.btn_multi.clicked.connect(self.run_multiple)
-
         self.btn_cancel = QPushButton("Cancel")
         self.btn_cancel.setProperty("danger", True)
         self.btn_cancel.setEnabled(False)
         self.btn_cancel.clicked.connect(self.cancel_all_requests)
-
         sec_actions.addWidget(self.btn_multi, 1)
         sec_actions.addWidget(self.btn_cancel, 1)
-        sidebar_layout.addLayout(sec_actions)
+        sl.addLayout(sec_actions)
 
-        sidebar_layout.addStretch()
+        sl.addStretch()
 
-        # ── STATUS BAR ────────────────────────────────────────────────────────
-        status_frame = QFrame()
+        # STATUS BAR
+        status_frame = QWidget()
+        status_frame.setObjectName("statusFrame")
         status_frame.setStyleSheet(f"""
-            QFrame {{
-                background-color: {CARD_BG};
+            QWidget#statusFrame {{
+                background-color: {SIDEBAR_BG};
                 border: 1.5px solid {BORDER};
                 border-radius: 8px;
+            }}
+            QWidget#statusFrame QLabel {{
+                border: none;
+                background: transparent;
             }}
         """)
         status_inner = QHBoxLayout(status_frame)
         status_inner.setContentsMargins(10, 6, 10, 6)
-
         status_dot = QLabel("◉")
-        status_dot.setStyleSheet(f"color: {ACCENT}; font-size: 10px; background: transparent; border: none;")
-
+        status_dot.setStyleSheet(f"color: {ACCENT}; font-size: 10px;")
         self.status_label = QLabel("Ready")
-        self.status_label.setStyleSheet(f"color: {TEXT_MUTED}; font-size: 12px; background: transparent; border: none;")
-
+        self.status_label.setStyleSheet(f"color: {TEXT_MUTED}; font-size: 11px;")
         status_inner.addWidget(status_dot)
         status_inner.addWidget(self.status_label, 1)
-        sidebar_layout.addWidget(status_frame)
+        sl.addWidget(status_frame)
 
         splitter.addWidget(sidebar)
 
-        # ── RIGHT PANEL (Response) ─────────────────────────────────────────────
+        # ── RESPONSE PANEL ────────────────────────────────────────────────────
         right = QWidget()
         right.setStyleSheet(f"background-color: {CARD_BG};")
         right_layout = QVBoxLayout(right)
         right_layout.setContentsMargins(0, 0, 0, 0)
         right_layout.setSpacing(0)
 
-        # Response toolbar
         toolbar = QWidget()
+        toolbar.setObjectName("toolbar")
         toolbar.setFixedHeight(44)
         toolbar.setStyleSheet(f"""
-            QWidget {{
+            QWidget#toolbar {{
                 background-color: {CARD_BG};
                 border-bottom: 1.5px solid {BORDER};
+            }}
+            QWidget#toolbar QLabel {{
+                border: none;
+                background: transparent;
             }}
         """)
         tb_layout = QHBoxLayout(toolbar)
         tb_layout.setContentsMargins(20, 0, 16, 0)
-
         resp_title = QLabel("Response")
-        resp_title.setStyleSheet(f"color: {TEXT_PRIMARY}; font-size: 14px; font-weight: 600; background: transparent; border: none;")
-
+        resp_title.setStyleSheet(f"color: {TEXT_PRIMARY}; font-size: 13px; font-weight: 600;")
         self.btn_clear = QPushButton("Clear")
-        self.btn_clear.setProperty("secondary", True)
-        self.btn_clear.setFixedSize(72, 30)
-        self.btn_clear.setStyleSheet(self.btn_clear.styleSheet() + "font-size: 12px;")
+        self.btn_clear.setFixedSize(64, 28)
         self.btn_clear.clicked.connect(self.clear_response)
-
         tb_layout.addWidget(resp_title)
         tb_layout.addStretch()
         tb_layout.addWidget(self.btn_clear)
-
         right_layout.addWidget(toolbar)
 
         self.response = QTextEdit(readOnly=True)
-        self.response.setFont(QFont("Cascadia Code", 11))
         self.response.setLineWrapMode(QTextEdit.NoWrap)
         self.response.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         right_layout.addWidget(self.response, 1)
@@ -536,5 +464,4 @@ class UIBuilderMixin:
         splitter.addWidget(right)
         splitter.setSizes([340, 860])
 
-        # Alias used elsewhere
         self.status = self.status_label
