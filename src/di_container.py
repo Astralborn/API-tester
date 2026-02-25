@@ -38,7 +38,7 @@ class RequestManagerProtocol(Protocol):
         self,
         ip: str,
         user: str,
-        password: str,
+        password: bytearray,
         endpoint: str,
         json_file: str,
         simple_format: bool,

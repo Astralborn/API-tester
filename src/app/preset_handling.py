@@ -148,8 +148,10 @@ class PresetHandlingMixin:
             QMessageBox.critical(self, "Error", f"Failed to create log file: {str(e)}")
             return
 
-        # Build a queue so we never recurse — each step is scheduled as a
-        # fresh event-loop iteration via QTimer.singleShot(0, ...).
+        # Read password once as bytearray — each worker receives its own copy
+        # so it can zero its slice independently after use.
+        raw_password = self.pass_edit.text()
+
         queue: deque[str] = deque(dlg.selected)
 
         def run_next() -> None:
@@ -170,14 +172,14 @@ class PresetHandlingMixin:
             def on_response(text: str, pname: str, tag: str) -> None:
                 self.display_response(text, pname, tag)
                 self._update_progress(self.current_request_count, self.total_request_count)
-                # Schedule next preset from the event loop — no recursion depth
                 QTimer.singleShot(0, run_next)
 
             try:
+                # Fresh bytearray copy per worker — each zeros its own copy
                 worker = self.requests.send_request_async(
                     ip,
                     self.user_edit.text(),
-                    self.pass_edit.text(),
+                    bytearray(raw_password.encode("utf-8")),
                     preset["endpoint"],
                     preset["json_file"],
                     self.simple_check.isChecked(),

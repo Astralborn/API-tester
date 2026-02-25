@@ -39,7 +39,9 @@ class RequestWorker(QThread):
         self,
         url: str,
         user: str,
-        password: str,
+        # bytearray instead of str — mutable so we can zero it after use,
+        # minimising the window the plaintext password lives in memory.
+        password: bytearray,
         payload: dict[str, Any],
         preset_name: str = "",
         json_type: str = "normal",
@@ -71,14 +73,21 @@ class RequestWorker(QThread):
         )
 
         try:
+            # Decode to str only at the point of use, then zero the bytearray
+            # immediately so the plaintext doesn't linger in memory.
+            password_str = self.password.decode("utf-8")
             response = requests.post(
                 self.url,
                 json=self.payload,
-                auth=requests.auth.HTTPDigestAuth(self.user, self.password),
+                auth=requests.auth.HTTPDigestAuth(self.user, password_str),
                 headers={"Content-Type": "application/json"},
                 timeout=10,
+                # Target devices use self-signed certificates. SSL verification
+                # is intentionally disabled for this internal QA tool.
                 verify=False,
             )
+            del password_str
+            self.password[:] = b"\x00" * len(self.password)
 
             text = (
                 f"URL: {self.url}\n"
@@ -99,6 +108,7 @@ class RequestWorker(QThread):
             )
 
         except requests.exceptions.RequestException as exc:
+            self.password[:] = b"\x00" * len(self.password)
             text = f"Request Error: {exc}"
             tag = "err"
 
@@ -150,7 +160,8 @@ class RequestManager:
     def __init__(self) -> None:
         self.workers: list[RequestWorker] = []
 
-        # Disable SSL warnings (intentional for device self-signed certs)
+        # Suppress urllib3 warnings that would otherwise fire on every request
+        # because target devices use self-signed certificates (verify=False).
         requests.packages.urllib3.disable_warnings(
             requests.packages.urllib3.exceptions.InsecureRequestWarning
         )
@@ -208,7 +219,7 @@ class RequestManager:
         self,
         ip: str,
         user: str,
-        password: str,
+        password: bytearray,
         endpoint: str,
         json_file: str | None,
         simple_format: bool,
