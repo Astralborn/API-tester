@@ -5,23 +5,9 @@ from pathlib import Path
 from typing import Any, Final
 
 from constants import PRESETS_FILE
+from logging_system import get_logger
 
-
-# ================= Resource Path =================
-
-def resource_path(relative_path: str) -> Path:
-    """
-    Return absolute path to a resource whether running as script or PyInstaller EXE.
-    External files must live next to the executable or in subfolders.
-    """
-    import sys
-
-    base_dir = (
-        Path(sys.executable).parent
-        if getattr(sys, "frozen", False)
-        else Path(__file__).resolve().parent
-    )
-    return base_dir / relative_path
+_logger = get_logger("preset_manager")
 
 
 # ================= Preset Manager =================
@@ -35,7 +21,7 @@ class PresetManager:
 
     def _preset_path(self) -> Path:
         """Return resolved presets file path."""
-        return resource_path(PRESETS_FILE)
+        return Path(PRESETS_FILE)
 
     def load_presets(self) -> None:
         """Load presets from JSON file."""
@@ -48,8 +34,12 @@ class PresetManager:
         try:
             with path.open("r", encoding="utf-8") as f:
                 self.presets = json.load(f)
-        except Exception:
-            # Corrupt JSON or read error → reset safely
+        except Exception as exc:
+            _logger.error(
+                "Failed to load presets — resetting to empty list",
+                file=str(path),
+                error=str(exc),
+            )
             self.presets = []
 
     def save_presets(self) -> None:
@@ -60,7 +50,11 @@ class PresetManager:
             with path.open("w", encoding="utf-8") as f:
                 json.dump(self.presets, f, indent=2, ensure_ascii=False)
         except Exception as exc:
-            print(f"Failed to save presets: {exc}")
+            _logger.error(
+                "Failed to save presets",
+                file=str(path),
+                error=str(exc),
+            )
 
     # ---------- CRUD ----------
 
