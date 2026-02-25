@@ -14,7 +14,9 @@ from logging_system import get_logger
 
 
 # Ensure logs directory exists
-Path(LOGS_FOLDER).mkdir(parents=True, exist_ok=True)
+LOGS_FOLDER.mkdir(parents=True, exist_ok=True)
+
+_logger = get_logger("request_manager")
 
 
 # ================= Helpers =================
@@ -51,8 +53,8 @@ class RequestWorker(QThread):
         self.preset_name = preset_name
         self.json_type = json_type
         self.log_file = log_file
-        
-        # Initialize logger for this request
+
+        # Initialize logger for this worker
         self.logger = get_logger("request_worker")
 
     # ---------- Main thread execution ----------
@@ -60,13 +62,15 @@ class RequestWorker(QThread):
     def run(self) -> None:
         """Execute HTTP request and emit result."""
         self._ensure_log_file()
-        
+
         # Log request start
-        self.logger.info(f"Starting request to {self.url}", 
-                        url=self.url, 
-                        user=self.user,
-                        preset_name=self.preset_name,
-                        payload_size=len(json.dumps(self.payload)))
+        self.logger.info(
+            f"Starting request to {self.url}",
+            url=self.url,
+            user=self.user,
+            preset_name=self.preset_name,
+            payload_size=len(json.dumps(self.payload)),
+        )
 
         try:
             response = requests.post(
@@ -86,23 +90,29 @@ class RequestWorker(QThread):
             )
 
             tag = "ok" if response.status_code == 200 else "warn"
-            
+
             # Log successful request
-            self.logger.log_request("POST", self.url, response.status_code, 
-                                   response.elapsed.total_seconds(),
-                                   preset_name=self.preset_name,
-                                   response_size=len(response.text))
+            self.logger.log_request(
+                "POST",
+                self.url,
+                response.status_code,
+                response.elapsed.total_seconds(),
+                preset_name=self.preset_name,
+                response_size=len(response.text),
+            )
 
         except requests.exceptions.RequestException as exc:
             text = f"Request Error: {exc}"
             tag = "err"
-            
+
             # Log request error
-            self.logger.error(f"Request failed: {exc}", 
-                            url=self.url, 
-                            user=self.user,
-                            preset_name=self.preset_name,
-                            error_type=type(exc).__name__)
+            self.logger.error(
+                f"Request failed: {exc}",
+                url=self.url,
+                user=self.user,
+                preset_name=self.preset_name,
+                error_type=type(exc).__name__,
+            )
 
         self._write_log(text, tag)
         self.finished.emit(text, self.preset_name, tag)
@@ -115,7 +125,7 @@ class RequestWorker(QThread):
             return
 
         safe_name = make_safe_filename(self.preset_name or "request")
-        self.log_file = Path(LOGS_FOLDER) / f"log_{safe_name}_{_timestamp()}.log"
+        self.log_file = LOGS_FOLDER / f"log_{safe_name}_{_timestamp()}.log"
 
     def _write_log(self, text: str, tag: str) -> None:
         """Append request result to log file."""
@@ -131,7 +141,11 @@ class RequestWorker(QThread):
                 f.write(f"Tag: {tag}\n{text}\n")
 
         except Exception as exc:
-            print(f"Logging error: {exc}")
+            self.logger.error(
+                "Failed to write log file",
+                file=str(self.log_file),
+                error=str(exc),
+            )
 
 
 # ================= Request Manager =================
@@ -140,15 +154,14 @@ class RequestManager:
     def __init__(self) -> None:
         self.workers: list[RequestWorker] = []
 
-        # Disable SSL warnings (intentional for device APIs)
+        # Disable SSL warnings (intentional for device self-signed certs)
         requests.packages.urllib3.disable_warnings(
             requests.packages.urllib3.exceptions.InsecureRequestWarning
         )
 
     # ---------- Build request ----------
-
+    @staticmethod
     def build_request(
-        self,
         ip: str,
         endpoint: str,
         json_file: str | None,
@@ -164,20 +177,24 @@ class RequestManager:
 
         if json_file and json_file != "(none)":
             try:
-                json_path = Path(JSON_FOLDER) / Path(json_file.strip())
+                json_path = JSON_FOLDER / json_file.strip()
                 with json_path.open("r", encoding="utf-8") as f:
                     payload = json.load(f)
             except Exception as exc:
-                print(f"Failed to load JSON file '{json_file}': {exc}")
+                _logger.error(
+                    f"Failed to load JSON file '{json_file}'",
+                    file=json_file,
+                    error=str(exc),
+                )
 
         return url, payload
 
     # ---------- Logging ----------
-
-    def start_new_log(self, preset_name: str) -> Path:
+    @staticmethod
+    def start_new_log(preset_name: str) -> Path:
         """Create new log file path."""
         safe_name = make_safe_filename(preset_name or "request")
-        return Path(LOGS_FOLDER) / f"log_{safe_name}_{_timestamp()}.log"
+        return LOGS_FOLDER / f"log_{safe_name}_{_timestamp()}.log"
 
     # ---------- Async request ----------
 
@@ -210,5 +227,5 @@ class RequestManager:
         worker.finished.connect(callback)
         self.workers.append(worker)
         worker.start()
-        
+
         return worker

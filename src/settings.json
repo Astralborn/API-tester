@@ -1,19 +1,19 @@
 {
   "connection": {
     "last_ip": "1.1.1.1",
-    "last_user": "1",
+    "last_user": "",
     "remember_password": false,
     "last_simple_format": false
   },
   "ui": {
-    "window_geometry": "01d9d0cb0003000000000000fffffff9000006aa0000038f0000016d00000071000005820000031b000000000200000006ab0000000000000017000006aa0000038f",
+    "window_geometry": "01d9d0cb0003000000000000fffffff9000006aa0000038f0000016d00000016000005820000038e000000000200000006ab0000000000000017000006aa0000038f",
     "window_state": "",
-    "last_test_mode": "happy",
+    "last_test_mode": "unhappy",
     "last_json_type": "normal"
   },
   "presets": {
     "last_preset": "",
-    "last_endpoint": "/api/intercom/GetContacts",
-    "last_json_file": "get/normal_path/GetContacts_Normal_Path.json"
+    "last_endpoint": "/api/call",
+    "last_json_file": "get/unhappy/GetSIPAccount_unhappy_no_data.json"
   }
 }

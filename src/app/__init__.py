@@ -29,12 +29,14 @@ class ApiTestApp(
     PresetHandlingMixin
 ):
     """Main API Test application widget."""
-    
-    def __init__(self, 
-                 preset_manager: PresetManagerProtocol | None = None,
-                 request_manager: RequestManagerProtocol | None = None,
-                 settings_manager: SettingsManagerProtocol | None = None,
-                 container: DIContainer | None = None) -> None:
+
+    def __init__(
+        self,
+        preset_manager: PresetManagerProtocol | None = None,
+        request_manager: RequestManagerProtocol | None = None,
+        settings_manager: SettingsManagerProtocol | None = None,
+        container: DIContainer | None = None,
+    ) -> None:
         super().__init__()
 
         # Use dependency injection or create defaults
@@ -48,7 +50,7 @@ class ApiTestApp(
             from presets import PresetManager
             from requests_manager import RequestManager
             from settings import SettingsManager
-            
+
             self.presets = preset_manager or PresetManager()
             self.requests = request_manager or RequestManager()
             self.settings = settings_manager or SettingsManager()
@@ -56,12 +58,15 @@ class ApiTestApp(
 
         # Initialize logging
         self.logger = get_logger("api_test_app")
-        self.logger.log_application_event("application_started", 
-                                         window_geometry="1200x720",
-                                         python_version=sys.version)
+        self.logger.log_application_event(
+            "application_started",
+            window_geometry="1200x720",
+            python_version=sys.version,
+        )
 
         self.setWindowTitle("API Test Tool")
-        self.setWindowIcon(QIcon(resource_path("api_tester_icon.ico")))
+        # QIcon requires str — resource_path now returns Path so we convert
+        self.setWindowIcon(QIcon(str(resource_path("api_tester_icon.ico"))))
         self.resize(1200, 720)
 
         # Request tracking
@@ -92,14 +97,14 @@ class ApiTestApp(
         self.build_ui()
         self.load_settings()
         self.update_presets_list()
-        
+
         # Connect window geometry auto-save
         self._setup_geometry_auto_save()
-    
-    def closeEvent(self, event) -> None:
+
+    def close_event(self, event) -> None:
         """Handle application close event - save settings."""
         self.save_settings()
         # Cancel any active requests
         if self.active_requests:
             self.cancel_all_requests()
-        super().closeEvent(event)
+        super().close_event(event)

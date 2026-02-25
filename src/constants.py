@@ -5,7 +5,7 @@ from typing import Final
 
 # ================= Resource Paths =================
 
-def resource_path(relative_path: str) -> str:
+def resource_path(relative_path: str) -> Path:
     """
     Return absolute path to a resource (JSON, presets, logs).
     Works for both Python scripts and PyInstaller EXE (--onedir).
@@ -15,14 +15,14 @@ def resource_path(relative_path: str) -> str:
         if getattr(sys, "frozen", False)
         else Path(__file__).resolve().parent
     )
-    return str(base_dir / relative_path)
+    return base_dir / relative_path
 
 
 # ================= Folders & Files =================
 
-JSON_FOLDER: Final[str] = resource_path("json_configs")
-LOGS_FOLDER: Final[str] = resource_path("logs")
-PRESETS_FILE: Final[str] = resource_path("presets.json")
+JSON_FOLDER: Final[Path] = resource_path("json_configs")
+LOGS_FOLDER: Final[Path] = resource_path("logs")
+PRESETS_FILE: Final[Path] = resource_path("presets.json")
 
 
 # ================= Theme Colors =================

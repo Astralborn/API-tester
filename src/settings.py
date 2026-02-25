@@ -18,7 +18,8 @@ class SettingsManager:
     SETTINGS_FILE: Final[str] = "settings.json"
 
     def __init__(self) -> None:
-        self.settings_file = Path(resource_path(self.SETTINGS_FILE))
+        # resource_path already returns Path — no wrapping needed
+        self.settings_file: Path = resource_path(self.SETTINGS_FILE)
         self.settings: dict[str, Any] = {}
         self.load_settings()
 

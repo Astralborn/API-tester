@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Final
+from typing import Any
 
 from constants import PRESETS_FILE
 from logging_system import get_logger
@@ -21,7 +21,8 @@ class PresetManager:
 
     def _preset_path(self) -> Path:
         """Return resolved presets file path."""
-        return Path(PRESETS_FILE)
+        # PRESETS_FILE is already a Path (built by constants.resource_path)
+        return PRESETS_FILE
 
     def load_presets(self) -> None:
         """Load presets from JSON file."""
