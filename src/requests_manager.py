@@ -18,12 +18,18 @@ LOGS_FOLDER.mkdir(parents=True, exist_ok=True)
 
 _logger = get_logger("request_manager")
 
+# Maximum characters allowed in a generated filename segment.
+# Most filesystems support 255 bytes; we stay well under that because
+# the full log filename also includes a timestamp suffix.
+_FILENAME_MAX_LEN = 64
+
 
 # ================= Helpers =================
 
 def make_safe_filename(name: str) -> str:
-    """Replace unsafe filename characters with underscore."""
-    return re.sub(r"[^A-Za-z0-9._-]", "_", name)
+    """Replace unsafe filename characters with underscore, capped at 64 chars."""
+    safe = re.sub(r"[^A-Za-z0-9._-]", "_", name)
+    return safe[:_FILENAME_MAX_LEN]
 
 
 def _timestamp() -> str:

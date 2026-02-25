@@ -1,6 +1,8 @@
 """UI builder module for API Test Tool — Modern two-panel design."""
 from __future__ import annotations
 
+import itertools
+
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPalette, QColor
 from PySide6.QtWidgets import (
@@ -13,19 +15,19 @@ from constants import API_ENDPOINTS
 
 
 # ── colour tokens ──────────────────────────────────────────────────────────────
-BG          = "#FAFAFA"
-SIDEBAR_BG  = "#F0F0F2"
-CARD_BG     = "#FFFFFF"
-BORDER      = "#E2E2E8"
-BORDER_FOCUS= "#2563EB"
-TEXT_PRIMARY= "#0F0F11"
-TEXT_MUTED  = "#6B7280"
-ACCENT      = "#2563EB"
-ACCENT_HOVER= "#1D4ED8"
-BTN_BG      = "#FFFFFF"
-BTN_HVR     = "#F0F0F2"
-INPUT_BG    = "#FFFFFF"
-DANGER      = "#DC2626"
+BG           = "#FAFAFA"
+SIDEBAR_BG   = "#F0F0F2"
+CARD_BG      = "#FFFFFF"
+BORDER       = "#E2E2E8"
+BORDER_FOCUS = "#2563EB"
+TEXT_PRIMARY = "#0F0F11"
+TEXT_MUTED   = "#6B7280"
+ACCENT       = "#2563EB"
+ACCENT_HOVER = "#1D4ED8"
+BTN_BG       = "#FFFFFF"
+BTN_HVR      = "#F0F0F2"
+INPUT_BG     = "#FFFFFF"
+DANGER       = "#DC2626"
 # ──────────────────────────────────────────────────────────────────────────────
 
 
@@ -181,13 +183,14 @@ QSplitter::handle {{
 }}
 """
 
-_card_counter = [0]
+# itertools.count() replaces the [0] mutable list hack — it's an infinite
+# counter that produces 1, 2, 3, … each time next() is called.
+_card_counter = itertools.count(1)
 
 
 def _card(layout_cls=QVBoxLayout, spacing: int = 7, margins=(12, 10, 12, 10)):
-    """Return a bordered card widget."""
-    _card_counter[0] += 1
-    name = f"card_{_card_counter[0]}"
+    """Return a bordered card widget with a unique object name."""
+    name = f"card_{next(_card_counter)}"
     frame = QWidget()
     frame.setObjectName(name)
     frame.setStyleSheet(f"""
@@ -213,7 +216,10 @@ def _card(layout_cls=QVBoxLayout, spacing: int = 7, margins=(12, 10, 12, 10)):
 
 def _section_label(text: str) -> QLabel:
     lbl = QLabel(text.upper())
-    lbl.setStyleSheet("color: #9CA3AF; font-size: 9px; font-weight: 700; letter-spacing: 1px; border: none; background: transparent; padding: 0;")
+    lbl.setStyleSheet(
+        "color: #9CA3AF; font-size: 9px; font-weight: 700; "
+        "letter-spacing: 1px; border: none; background: transparent; padding: 0;"
+    )
     return lbl
 
 
@@ -271,7 +277,10 @@ class UIBuilderMixin:
         dot = QLabel("●")
         dot.setStyleSheet(f"color: {ACCENT}; font-size: 13px; background: transparent; border: none;")
         title = QLabel("API Tester")
-        title.setStyleSheet(f"color: {TEXT_PRIMARY}; font-size: 15px; font-weight: 700; background: transparent; border: none; padding: 0 0 0 5px;")
+        title.setStyleSheet(
+            f"color: {TEXT_PRIMARY}; font-size: 15px; font-weight: 700; "
+            "background: transparent; border: none; padding: 0 0 0 5px;"
+        )
         logo_row.addWidget(dot)
         logo_row.addWidget(title)
         logo_row.addStretch()
