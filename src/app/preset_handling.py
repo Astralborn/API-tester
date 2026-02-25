@@ -1,8 +1,10 @@
 """Preset handling module for API Test Tool."""
 from __future__ import annotations
 
+from collections import deque
 from typing import Any
 
+from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QInputDialog, QMessageBox
 
 from dialogs import MultiSelectDialog
@@ -77,9 +79,12 @@ class PresetHandlingMixin:
         )
 
         self.update_presets_list()
-        self.logger.log_preset_action("save_completed", name,
-                                     endpoint=self.endpoint_combo.currentText(),
-                                     json_file=self.json_combo.currentText())
+        self.logger.log_preset_action(
+            "save_completed",
+            name,
+            endpoint=self.endpoint_combo.currentText(),
+            json_file=self.json_combo.currentText(),
+        )
 
     def load_preset(self) -> None:
         """Load a saved preset into the UI."""
@@ -102,9 +107,12 @@ class PresetHandlingMixin:
         self.json_type_combo.setCurrentText(preset.get("json_type", "normal"))
 
         self.status.setText(f"Preset '{name}' loaded")
-        self.logger.log_preset_action("load_completed", name,
-                                     endpoint=preset["endpoint"],
-                                     json_file=preset.get("json_file", "(none)"))
+        self.logger.log_preset_action(
+            "load_completed",
+            name,
+            endpoint=preset["endpoint"],
+            json_file=preset.get("json_file", "(none)"),
+        )
 
     def run_multiple(self) -> None:
         """Run multiple presets in sequence."""
@@ -122,48 +130,48 @@ class PresetHandlingMixin:
             QMessageBox.warning(self, "Error", "Device IP required")
             return
 
-        # Validate IP format
         if not self._validate_ip(ip):
             QMessageBox.warning(self, "Error", "Invalid IP address format")
             return
 
-        # Check if username is provided for authentication
         if not self.user_edit.text().strip():
             QMessageBox.warning(self, "Error", "Username required for authentication")
             return
 
-        # Initialize progress tracking
         self.total_request_count = len(dlg.selected)
         self.current_request_count = 0
-        
         self.status.setText(f"Running {self.total_request_count} presets...")
-        
+
         try:
             log_file = self.requests.start_new_log("MultiPreset_Run")
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to create log file: {str(e)}")
             return
 
-        def run_next(i: int = 0) -> None:
-            if i >= len(dlg.selected):
+        # Build a queue so we never recurse — each step is scheduled as a
+        # fresh event-loop iteration via QTimer.singleShot(0, ...).
+        queue: deque[str] = deque(dlg.selected)
+
+        def run_next() -> None:
+            if not queue:
                 self.status.setText("All presets finished")
                 return
 
-            # Update progress
-            self.current_request_count = i + 1
+            preset_name = queue.popleft()
+            self.current_request_count += 1
             self._update_progress(self.current_request_count, self.total_request_count)
 
-            preset = self.presets.get_by_name(dlg.selected[i])
+            preset = self.presets.get_by_name(preset_name)
             if not preset:
-                self.status.setText(f"Skipping invalid preset: {dlg.selected[i]}")
-                run_next(i + 1)
+                self.status.setText(f"Skipping invalid preset: {preset_name}")
+                QTimer.singleShot(0, run_next)
                 return
 
-            def on_response(text: str, preset_name: str, tag: str) -> None:
-                self.display_response(text, preset_name, tag)
-                # Update progress after response
+            def on_response(text: str, pname: str, tag: str) -> None:
+                self.display_response(text, pname, tag)
                 self._update_progress(self.current_request_count, self.total_request_count)
-                run_next(i + 1)
+                # Schedule next preset from the event loop — no recursion depth
+                QTimer.singleShot(0, run_next)
 
             try:
                 worker = self.requests.send_request_async(
@@ -175,21 +183,19 @@ class PresetHandlingMixin:
                     self.simple_check.isChecked(),
                     preset["json_type"],
                     on_response,
-                    preset_name=dlg.selected[i],
+                    preset_name=preset_name,
                     log_file=log_file,
                 )
-                
-                # Track the request
+
                 self._track_request(worker)
-                
-                # Handle completion
-                def on_finished():
+
+                def on_finished() -> None:
                     self._untrack_request(worker)
-                
+
                 worker.finished.connect(on_finished)
-                
+
             except Exception as e:
-                self.status.setText(f"Failed to send {dlg.selected[i]}: {str(e)}")
-                run_next(i + 1)
+                self.status.setText(f"Failed to send {preset_name}: {str(e)}")
+                QTimer.singleShot(0, run_next)
 
         run_next()

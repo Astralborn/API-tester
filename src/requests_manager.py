@@ -54,7 +54,6 @@ class RequestWorker(QThread):
         self.json_type = json_type
         self.log_file = log_file
 
-        # Initialize logger for this worker
         self.logger = get_logger("request_worker")
 
     # ---------- Main thread execution ----------
@@ -63,7 +62,6 @@ class RequestWorker(QThread):
         """Execute HTTP request and emit result."""
         self._ensure_log_file()
 
-        # Log request start
         self.logger.info(
             f"Starting request to {self.url}",
             url=self.url,
@@ -91,7 +89,6 @@ class RequestWorker(QThread):
 
             tag = "ok" if response.status_code == 200 else "warn"
 
-            # Log successful request
             self.logger.log_request(
                 "POST",
                 self.url,
@@ -105,7 +102,6 @@ class RequestWorker(QThread):
             text = f"Request Error: {exc}"
             tag = "err"
 
-            # Log request error
             self.logger.error(
                 f"Request failed: {exc}",
                 url=self.url,
@@ -160,8 +156,9 @@ class RequestManager:
         )
 
     # ---------- Build request ----------
-    @staticmethod
+
     def build_request(
+        self,
         ip: str,
         endpoint: str,
         json_file: str | None,
@@ -190,11 +187,20 @@ class RequestManager:
         return url, payload
 
     # ---------- Logging ----------
-    @staticmethod
-    def start_new_log(preset_name: str) -> Path:
+
+    def start_new_log(self, preset_name: str) -> Path:
         """Create new log file path."""
         safe_name = make_safe_filename(preset_name or "request")
         return LOGS_FOLDER / f"log_{safe_name}_{_timestamp()}.log"
+
+    # ---------- Worker cleanup ----------
+
+    def _remove_worker(self, worker: RequestWorker) -> None:
+        """Remove a finished worker from the tracking list."""
+        try:
+            self.workers.remove(worker)
+        except ValueError:
+            pass  # Already removed (e.g. via cancel)
 
     # ---------- Async request ----------
 
@@ -225,6 +231,8 @@ class RequestManager:
         )
 
         worker.finished.connect(callback)
+        # Auto-remove from list when done — prevents unbounded growth
+        worker.finished.connect(lambda *_: self._remove_worker(worker))
         self.workers.append(worker)
         worker.start()
 
