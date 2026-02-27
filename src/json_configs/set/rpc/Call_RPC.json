@@ -1,8 +1,0 @@
-{
-  "jsonrpc": "2.0",
-  "method": "Call",
-  "params": {
-    "To": "sip:10.27.35.8:5060"
-  },
-  "id": "helmut"
-}

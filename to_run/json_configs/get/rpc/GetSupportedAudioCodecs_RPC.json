@@ -1,6 +1,0 @@
-{
-  "jsonrpc": "2.0",
-  "method": "GetSupportedAudioCodecs",
-  "params": {},
-  "id": "helmut"
-}

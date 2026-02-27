@@ -8,13 +8,11 @@ from PySide6.QtGui import QPalette, QColor
 from PySide6.QtWidgets import (
     QApplication, QVBoxLayout, QHBoxLayout,
     QComboBox, QLineEdit, QPushButton, QCheckBox, QTextEdit,
-    QLabel, QWidget, QSizePolicy, QFrame, QSplitter
+    QLabel, QWidget, QSizePolicy, QFrame, QSplitter,
 )
 
-from constants import API_ENDPOINTS
+from config.constants import API_ENDPOINTS
 
-
-# ── colour tokens ──────────────────────────────────────────────────────────────
 BG           = "#FAFAFA"
 SIDEBAR_BG   = "#F0F0F2"
 CARD_BG      = "#FFFFFF"
@@ -28,163 +26,73 @@ BTN_BG       = "#FFFFFF"
 BTN_HVR      = "#F0F0F2"
 INPUT_BG     = "#FFFFFF"
 DANGER       = "#DC2626"
-# ──────────────────────────────────────────────────────────────────────────────
-
 
 _GLOBAL_QSS = f"""
 QWidget {{
-    background-color: {BG};
-    color: {TEXT_PRIMARY};
+    background-color: {BG}; color: {TEXT_PRIMARY};
     font-family: 'Segoe UI', system-ui, sans-serif;
-    font-size: 12px;
-    border: none;
-    outline: none;
+    font-size: 12px; border: none; outline: none;
 }}
-
 QLineEdit, QComboBox {{
-    background-color: {INPUT_BG};
-    border: 1.5px solid {BORDER};
-    border-radius: 6px;
-    padding: 4px 10px;
-    min-height: 26px;
-    color: {TEXT_PRIMARY};
+    background-color: {INPUT_BG}; border: 1.5px solid {BORDER};
+    border-radius: 6px; padding: 4px 10px; min-height: 26px; color: {TEXT_PRIMARY};
 }}
-QLineEdit:hover, QComboBox:hover {{
-    border-color: #BBBBC8;
-}}
-QLineEdit:focus, QComboBox:focus {{
-    border-color: {BORDER_FOCUS};
-    background-color: {CARD_BG};
-}}
-QLineEdit::placeholder {{
-    color: {TEXT_MUTED};
-}}
-
-QComboBox::drop-down {{
-    width: 28px;
-    border: none;
-    background: transparent;
-}}
+QLineEdit:hover, QComboBox:hover {{ border-color: #BBBBC8; }}
+QLineEdit:focus, QComboBox:focus {{ border-color: {BORDER_FOCUS}; background-color: {CARD_BG}; }}
+QLineEdit::placeholder {{ color: {TEXT_MUTED}; }}
+QComboBox::drop-down {{ width: 28px; border: none; background: transparent; }}
 QComboBox::down-arrow {{
-    image: none;
-    width: 0; height: 0;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 5px solid {TEXT_MUTED};
-    margin-right: 8px;
+    image: none; width: 0; height: 0;
+    border-left: 4px solid transparent; border-right: 4px solid transparent;
+    border-top: 5px solid {TEXT_MUTED}; margin-right: 8px;
 }}
 QComboBox QAbstractItemView {{
-    background-color: {CARD_BG};
-    border: 1.5px solid {BORDER};
-    border-radius: 8px;
-    padding: 4px;
-    selection-background-color: #EFF6FF;
-    selection-color: {ACCENT};
-    outline: none;
+    background-color: {CARD_BG}; border: 1.5px solid {BORDER};
+    border-radius: 8px; padding: 4px;
+    selection-background-color: #EFF6FF; selection-color: {ACCENT}; outline: none;
 }}
-QComboBox QAbstractItemView::item {{
-    min-height: 28px;
-    padding: 0 8px;
-    border-radius: 4px;
-}}
-
+QComboBox QAbstractItemView::item {{ min-height: 28px; padding: 0 8px; border-radius: 4px; }}
 QPushButton {{
-    background-color: {BTN_BG};
-    color: {TEXT_PRIMARY};
-    border: 1.5px solid {BORDER};
-    border-radius: 6px;
-    padding: 5px 16px;
-    font-weight: 600;
-    font-size: 12px;
-    min-height: 28px;
+    background-color: {BTN_BG}; color: {TEXT_PRIMARY};
+    border: 1.5px solid {BORDER}; border-radius: 6px;
+    padding: 5px 16px; font-weight: 600; font-size: 12px; min-height: 28px;
 }}
-QPushButton:hover {{
-    background-color: {BTN_HVR};
-    border-color: #BBBBC8;
-}}
-QPushButton:pressed {{
-    background-color: #E5E7EB;
-}}
-QPushButton:disabled {{
-    color: #B0B0B8;
-    border-color: {BORDER};
-}}
-
+QPushButton:hover {{ background-color: {BTN_HVR}; border-color: #BBBBC8; }}
+QPushButton:pressed {{ background-color: #E5E7EB; }}
+QPushButton:disabled {{ color: #B0B0B8; border-color: {BORDER}; }}
 QPushButton[danger="true"] {{
-    background-color: transparent;
-    color: {DANGER};
-    border: 1.5px solid #FECACA;
+    background-color: transparent; color: {DANGER}; border: 1.5px solid #FECACA;
 }}
-QPushButton[danger="true"]:hover {{
-    background-color: #FEF2F2;
-    border-color: {DANGER};
-}}
+QPushButton[danger="true"]:hover {{ background-color: #FEF2F2; border-color: {DANGER}; }}
 QPushButton[danger="true"]:disabled {{
-    color: #B0B0B8;
-    border-color: {BORDER};
-    background-color: transparent;
+    color: #B0B0B8; border-color: {BORDER}; background-color: transparent;
 }}
-
-QCheckBox {{
-    color: {TEXT_MUTED};
-    spacing: 8px;
-}}
+QCheckBox {{ color: {TEXT_MUTED}; spacing: 8px; }}
 QCheckBox::indicator {{
-    width: 16px;
-    height: 16px;
-    border: 1.5px solid {BORDER};
-    border-radius: 4px;
-    background-color: {INPUT_BG};
+    width: 16px; height: 16px; border: 1.5px solid {BORDER};
+    border-radius: 4px; background-color: {INPUT_BG};
 }}
-QCheckBox::indicator:hover {{
-    border-color: {BORDER_FOCUS};
-}}
+QCheckBox::indicator:hover {{ border-color: {BORDER_FOCUS}; }}
 QCheckBox::indicator:checked {{
-    background-color: {ACCENT};
-    border-color: {ACCENT};
+    background-color: {ACCENT}; border-color: {ACCENT};
     image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEwIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEgNEwzLjUgNi41TDkgMS41IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlbGluZWpvaW49InJvdW5kIi8+PC9zdmc+);
 }}
-
 QTextEdit {{
-    background-color: {CARD_BG};
-    border: none;
-    padding: 16px;
-    font-family: Consolas, Monaco, monospace;
-    font-size: 12px;
-    color: {TEXT_PRIMARY};
+    background-color: {CARD_BG}; border: none; padding: 16px;
+    font-family: Consolas, Monaco, monospace; font-size: 12px; color: {TEXT_PRIMARY};
 }}
-
-QScrollBar:vertical {{
-    background: transparent;
-    width: 8px;
-}}
-QScrollBar::handle:vertical {{
-    background: #D1D5DB;
-    border-radius: 4px;
-    min-height: 24px;
-}}
+QScrollBar:vertical {{ background: transparent; width: 8px; }}
+QScrollBar::handle:vertical {{ background: #D1D5DB; border-radius: 4px; min-height: 24px; }}
 QScrollBar::handle:vertical:hover {{ background: #9CA3AF; }}
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0; }}
-QScrollBar:horizontal {{
-    background: transparent;
-    height: 8px;
-}}
-QScrollBar::handle:horizontal {{
-    background: #D1D5DB;
-    border-radius: 4px;
-    min-width: 24px;
-}}
+QScrollBar:horizontal {{ background: transparent; height: 8px; }}
+QScrollBar::handle:horizontal {{ background: #D1D5DB; border-radius: 4px; min-width: 24px; }}
 QScrollBar::handle:horizontal:hover {{ background: #9CA3AF; }}
 QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{ width: 0; }}
-
-QSplitter::handle {{
-    background-color: {BORDER};
-    width: 1px;
-}}
+QSplitter::handle {{ background-color: {BORDER}; width: 1px; }}
 """
 
-# itertools.count() replaces the [0] mutable list hack — it's an infinite
-# counter that produces 1, 2, 3, … each time next() is called.
+# itertools.count() replaces the [0] mutable list hack
 _card_counter = itertools.count(1)
 
 
@@ -196,17 +104,10 @@ def _card(layout_cls=QVBoxLayout, spacing: int = 7, margins=(12, 10, 12, 10)):
     frame.setStyleSheet(f"""
         QWidget#{name} {{
             background-color: {SIDEBAR_BG};
-            border: 1.5px solid {BORDER};
-            border-radius: 10px;
+            border: 1.5px solid {BORDER}; border-radius: 10px;
         }}
-        QWidget#{name} QLabel {{
-            border: none;
-            background: transparent;
-        }}
-        QWidget#{name} QCheckBox {{
-            border: none;
-            background: transparent;
-        }}
+        QWidget#{name} QLabel {{ border: none; background: transparent; }}
+        QWidget#{name} QCheckBox {{ border: none; background: transparent; }}
     """)
     lay = layout_cls(frame)
     lay.setSpacing(spacing)
@@ -253,7 +154,6 @@ class UIBuilderMixin:
         self.setStyleSheet(_GLOBAL_QSS)
 
     def build_ui(self) -> None:
-
         root = QHBoxLayout(self)
         root.setContentsMargins(0, 0, 0, 0)
         root.setSpacing(0)
@@ -271,7 +171,6 @@ class UIBuilderMixin:
         sl.setContentsMargins(14, 14, 14, 12)
         sl.setSpacing(8)
 
-        # Title
         logo_row = QHBoxLayout()
         logo_row.setContentsMargins(0, 0, 0, 0)
         dot = QLabel("●")
@@ -405,13 +304,9 @@ class UIBuilderMixin:
         status_frame.setStyleSheet(f"""
             QWidget#statusFrame {{
                 background-color: {SIDEBAR_BG};
-                border: 1.5px solid {BORDER};
-                border-radius: 8px;
+                border: 1.5px solid {BORDER}; border-radius: 8px;
             }}
-            QWidget#statusFrame QLabel {{
-                border: none;
-                background: transparent;
-            }}
+            QWidget#statusFrame QLabel {{ border: none; background: transparent; }}
         """)
         status_inner = QHBoxLayout(status_frame)
         status_inner.setContentsMargins(10, 6, 10, 6)
@@ -440,10 +335,7 @@ class UIBuilderMixin:
                 background-color: {CARD_BG};
                 border-bottom: 1.5px solid {BORDER};
             }}
-            QWidget#toolbar QLabel {{
-                border: none;
-                background: transparent;
-            }}
+            QWidget#toolbar QLabel {{ border: none; background: transparent; }}
         """)
         tb_layout = QHBoxLayout(toolbar)
         tb_layout.setContentsMargins(20, 0, 16, 0)

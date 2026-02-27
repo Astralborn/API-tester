@@ -1,8 +1,0 @@
-{
-  "jsonrpc": "2.0",
-  "method": "GetCallStatus",
-  "params": {
-    "CallId": "Out-0-1401964712.117694-gIRuBDTzh7BDKXw-5mDFKF"
-  },
-  "id": "helmut"
-}

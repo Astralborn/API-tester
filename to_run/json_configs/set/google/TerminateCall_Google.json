@@ -1,8 +1,0 @@
-{
-  "apiVersion": "1.5",
-  "method": "TerminateCall",
-  "params": {
-    "CallId": "Out-18-18-SIP"
-  },
-  "context": "test12345"
-}

@@ -1,0 +1,13 @@
+# API Test Tool — Python 3.10+
+#
+# Install:  pip install -r requirements.txt
+# Build:    pyinstaller --onefile --noconsole --icon=api_tester_icon.ico main.py
+
+# ── UI framework ──────────────────────────────────────────────────────────────
+PySide6>=6.6.0,<7.0.0
+
+# ── HTTP requests ─────────────────────────────────────────────────────────────
+requests>=2.31.0,<3.0.0
+
+
+
