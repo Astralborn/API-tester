@@ -364,4 +364,3 @@ class UIBuilderMixin:
         splitter.setSizes([340, 860])
 
         self.status = self.status_label
-
