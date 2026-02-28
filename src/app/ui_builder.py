@@ -275,6 +275,12 @@ class UIBuilderMixin:
         self.json_combo = QComboBox()
         self.json_combo.addItem("(none)")
         self.json_combo.setSizeAdjustPolicy(QComboBox.AdjustToMinimumContentsLengthWithIcon)
+        # Right-align text so the filename end is visible instead of the folder prefix
+        self.json_combo.setLayoutDirection(Qt.RightToLeft)
+        # Show full path as tooltip on hover
+        self.json_combo.currentTextChanged.connect(
+            lambda t: self.json_combo.setToolTip(t)
+        )
         req_lay.addWidget(self.json_combo)
         sl.addWidget(req_card)
 
