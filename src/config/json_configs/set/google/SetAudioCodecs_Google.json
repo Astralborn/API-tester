@@ -1,0 +1,13 @@
+{
+  "apiVersion": "1.5",
+  "method": "SetAudioCodecs",
+  "params": {
+    "AudioCodec": [
+      {
+        "Name": "G.722",
+        "SampleRate": 16000
+      }
+    ]
+  },
+  "context": "test12345"
+}

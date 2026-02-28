@@ -1,0 +1,26 @@
+{
+  "SetContacts": {
+    "contacts": [
+      {
+        "id": "9b00d6b6-951c-422b-b22f-732bfd943d16",
+        "type": "Person",
+        "firstName": "Tester 07",
+        "lastName": "",
+        "callInformation": [
+          {
+            "type": "SIP",
+            "address": "1921689378",
+            "accountid": "sip_account_7"
+          }
+        ],
+        "callForkingType": "sequential",
+        "UIAttributes": [
+          {
+            "Name": "DisplayName",
+            "Value": "Tester 07"
+          }
+        ]
+      }
+    ]
+  }
+}

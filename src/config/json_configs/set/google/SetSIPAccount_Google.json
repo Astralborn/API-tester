@@ -1,0 +1,13 @@
+{
+  "apiVersion": "1.5",
+  "method": "SetSIPAccount",
+  "params": {
+    "SIPAccount": {
+      "UserId": "user4568",
+      "Password": "335929990d369859",
+      "Registrar": "192.168.0.185",
+      "PublicDomain": "example94.com"
+    }
+  },
+  "context": "test12345"
+}

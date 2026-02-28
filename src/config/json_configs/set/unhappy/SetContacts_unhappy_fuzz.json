@@ -1,0 +1,24 @@
+{
+  "contacts": [
+    {
+      "id": "' OR 1=1 --",
+      "type": "\u0000\u0001\u0002",
+      "firstName": "<script>alert(1)</script>",
+      "lastName": "' OR 1=1 --",
+      "callInformation": [
+        {
+          "type": "<script>alert(1)</script>",
+          "address": "\u6f22\u5b57\ud83d\ude80",
+          "accountid": "\u6f22\u5b57\ud83d\ude80"
+        }
+      ],
+      "callForkingType": "' OR 1=1 --",
+      "UIAttributes": [
+        {
+          "Name": "\u6f22\u5b57\ud83d\ude80",
+          "Value": "\u6f22\u5b57\ud83d\ude80"
+        }
+      ]
+    }
+  ]
+}
