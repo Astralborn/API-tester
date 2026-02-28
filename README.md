@@ -1,20 +1,35 @@
 # API Test Tool
 
-![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
-![PySide6](https://img.shields.io/badge/UI-PySide6-green)
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white)
+![PySide6](https://img.shields.io/badge/UI-PySide6-41CD52?logo=qt&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
-![Status](https://img.shields.io/badge/Status-Active-success)
+![Status](https://img.shields.io/badge/Status-Active-brightgreen)
+
+A desktop QA utility for testing REST API endpoints on embedded network devices.
+Built with **PySide6** · Async via **QThread** · HTTP Digest auth
+
+---
 
 ## Overview
 
-**API Test Tool** is a desktop QA utility for testing **REST API endpoints** on embedded network devices. Built for internal automation workflows where devices use self-signed certificates and HTTP Digest authentication.
+API Test Tool lets QA engineers send authenticated HTTP requests to embedded devices, run batches of pre-configured test cases, and automatically log every response — all from a clean two-panel desktop UI.
 
-It allows engineers and testers to:
+Built for devices that use **self-signed certificates** and **HTTP Digest authentication**, where standard tools like Postman add friction to repetitive test workflows.
 
-- Send single API requests with live response display
-- Execute multiple presets sequentially with progress tracking
-- Generate **happy & unhappy test payloads** automatically
-- Log all requests and responses to rotating timestamped files
+---
+
+## Features
+
+| | |
+|:---|:---|
+| 🔁 **Single & batch requests** | Send one request or run a full preset sequence automatically |
+| 🔐 **HTTP Digest auth** | Username + password on every request |
+| ✅ **Happy / unhappy modes** | Filter presets by test scenario type |
+| 🔍 **Searchable presets** | Find and load any preset instantly |
+| 📦 **Multiple payload formats** | Normal Path / Action / Body, Google JSON, JSON-RPC |
+| ⚡ **Non-blocking UI** | Async requests via QThread — cancel mid-run at any time |
+| 💾 **Auto-save settings** | IP, username, window state persist between sessions |
+| 📝 **Automatic logging** | Every response timestamped and written to `logs/` |
 
 ---
 
@@ -22,45 +37,26 @@ It allows engineers and testers to:
 
 ![API Test Tool UI](docs/screenshot.png)
 
-> _Two-panel layout: request configuration sidebar (left) + response viewer (right)_
+> Two-panel layout — request configuration sidebar (left) + response viewer (right)
 
 ---
 
-## Features
+## Quick Start
 
-### API Testing
+```bash
+# 1. Clone the repo
+git clone https://github.com/Astralborn/API-tester.git
+cd API-tester
 
-- Supports **GET / SET / REMOVE** API endpoints
-- HTTP Digest authentication
-- Async requests via **QThread** — UI stays responsive
-- Formatted JSON response display
+# 2. Install dependencies
+pip install -r requirements.txt
 
-### Preset System
+# 3. Generate test payloads and presets (first time only)
+python src/config/json_generator.py
 
-- Save and load reusable request configurations
-- Filter by **test mode** (happy / unhappy) and search text
-- Automatic JSON payload binding per preset
-
-### Unhappy Test Generator (`json_generator.py`)
-
-Generates negative test cases across 4 failure categories:
-
-- **No data** — empty / null values
-- **Invalid values** — out-of-range or nonsensical inputs
-- **Wrong types** — strings where ints expected, etc.
-- **Fuzz payloads** — XSS strings, SQL injection, overflow values, unicode
-
-### Logging
-
-- Rotating structured logs (JSON + plain text)
-- Separate log file per multi-preset run
-- Stored in `logs/` (excluded from version control)
-
-### Architecture
-
-- **Dependency injection** via `DIContainer` with Protocol-based interfaces
-- **Mixin composition** — `UIBuilderMixin`, `RequestHandlingMixin`, `PresetHandlingMixin`, `SettingsHandlingMixin`
-- **Structured logging** with JSON output and log rotation
+# 4. Run
+python src/main.py
+```
 
 ---
 
@@ -68,85 +64,135 @@ Generates negative test cases across 4 failure categories:
 
 ```
 src/
- ├── main.py                       # Entry point
- │
- ├── [app/]                        # UI layer
- │    ├── __init__.py              # ApiTestApp — mixin composition root
- │    ├── ui_builder.py            # Layout, theme, widget construction
- │    ├── request_handling.py      # Send / cancel requests
- │    ├── preset_handling.py       # Load / save / run presets
- │    ├── settings_handling.py     # Persist and restore UI state
- │    └── dialogs.py               # MultiSelectDialog
- │
- ├── [managers/]                   # Business logic
- │    ├── requests_manager.py      # HTTP worker (QThread) + RequestManager
- │    ├── presets.py               # PresetManager — CRUD + persistence
- │    └── settings.py              # SettingsManager — persistence
- │
- └── [config/]                     # Infrastructure + test data
-      ├── constants.py             # Paths, endpoints, theme colours
-      ├── di_container.py          # DI container + Protocol interfaces
-      ├── logging_system.py        # Structured logger, JSON output, rotation
-      ├── json_generator.py        # Generates all happy + unhappy payloads
-      └── json_configs/            # Generated JSON files (run json_generator.py once)
+├── main.py                       # Entry point
+│
+├── app/                          # UI layer (mixin composition)
+│   ├── __init__.py               # ApiTestApp — assembles all mixins
+│   ├── ui_builder.py             # Two-panel layout & theme
+│   ├── request_handling.py       # Send / cancel requests
+│   ├── preset_handling.py        # Load / save / run presets
+│   ├── settings_handling.py      # Persist and restore UI state
+│   └── dialogs.py                # MultiSelectDialog
+│
+├── managers/                     # Business logic
+│   ├── requests_manager.py       # HTTP worker (QThread) + RequestManager
+│   ├── presets.py                # PresetManager — CRUD + persistence
+│   └── settings.py               # SettingsManager — JSON persistence
+│
+└── config/                       # Infrastructure & test data
+    ├── constants.py              # Paths, endpoints, theme tokens
+    ├── di_container.py           # DI container + Protocol interfaces
+    ├── logging_system.py         # Structured logger + JSON output + rotation
+    ├── json_generator.py         # Generates all happy + unhappy payloads
+    └── json_configs/             # Generated JSON files (git-ignored)
 ```
-
----
-
-## Installation
-
-### Requirements
-
-- Python **3.10+**
-- pip
-
-### Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### Run application
-
-```bash
-cd src
-python main.py
-```
-
----
-
-## Usage
-
-1. Enter **device IP**
-2. Select **preset** (or configure endpoint + JSON file manually)
-3. Click **Send Request** for a single request
-   — or —
-   **Run Multiple** to execute a batch of presets sequentially
-4. View formatted JSON responses in the right panel
-5. Logs saved automatically to `logs/`
 
 ---
 
 ## Generating Test Payloads
 
+Run once before first use, or whenever endpoints change:
+
 ```bash
-cd src
-python config/json_generator.py
+python src/config/json_generator.py
 ```
 
-Creates the full `json_configs/` folder structure and `presets.json` with all happy and unhappy test cases.
+Creates the full `json_configs/` folder and `presets.json` with every combination of endpoint × format × test type:
+
+| Type | Description |
+|:---|:---|
+| **Normal Path** | Method name in URL path |
+| **Normal Action** | Method as `?action=` query param |
+| **Normal Body** | Method name wrapped inside JSON body |
+| **Google JSON** | `apiVersion` + `method` + `params` + `context` |
+| **JSON-RPC** | `jsonrpc` + `method` + `params` + `id` |
+| **Unhappy — no data** | Empty / null values |
+| **Unhappy — invalid** | Out-of-range or nonsensical inputs |
+| **Unhappy — wrong types** | Strings where ints expected, etc. |
+| **Unhappy — fuzz** | XSS, SQL injection, overflow, unicode |
+
+---
+
+## Supported Endpoints
+
+| Group | Endpoints |
+|:---|:---|
+| **Contacts** | `GetContacts`, `SetContacts`, `RemoveContacts` |
+| **SIP Accounts** | `GetSIPAccount(s)`, `SetSIPAccount(s)`, `RemoveSIPAccount(s)`, `GetSIPAccountStatus` |
+| **SIP Configuration** | `GetSIPConfiguration`, `SetSIPConfiguration` |
+| **Audio Codecs** | `GetDefaultAudioCodecs`, `GetSupportedAudioCodecs`, `GetAudioCodecs`, `SetAudioCodecs` |
+| **Call Control** | `Call`, `GetCallStatus`, `TerminateCall` |
+| **Capabilities** | `GetServiceCapabilities`, `GetSupportedSIPAccountAttributes`, `GetSupportedMediaEncryptionModes` |
+
+---
+
+## Usage
+
+1. Enter the **Device IP**
+2. Enter **Username** and **Password**
+3. Choose **Test mode** (`happy` / `unhappy`) and optionally search presets
+4. Select a **Preset** → **Load** it, or pick **Endpoint** + **JSON file** manually
+5. Click **Send Request** for a single call — or **Run Multiple** for a batch
+6. View formatted JSON responses in the right panel
+7. Logs are saved automatically to `logs/`
+
+---
+
+## Logging
+
+Each request is logged automatically:
+
+```
+logs/log_<preset_name>_<YYYYMMDD_HHMMSS>.log
+```
+
+Multi-preset runs produce a single combined file with per-preset separators:
+
+```
+--- Preset: GetContacts_Normal_Path ---
+--- 2025-01-15 14:32:01 ---
+Tag: ok
+URL: http://192.168.1.100/api/intercom/GetContacts
+Payload: {}
+Status Code: 200
+{"contacts": [...]}
+```
+
+---
+
+## Architecture Notes
+
+The app is assembled via **mixin composition** — `ApiTestApp` inherits from four focused mixins rather than one monolithic class. Dependencies are injected through a lightweight `DIContainer` using `Protocol`-based interfaces, making individual components independently testable.
+
+Logging uses a custom `StructuredLogger` that writes plain text, rotating file, and structured JSONL output simultaneously.
+
+---
+
+## .gitignore Recommendations
+
+```gitignore
+# Application data (generated at runtime)
+src/config/json_configs/
+src/logs/
+src/config/presets.json
+src/settings.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+```
 
 ---
 
 ## License
 
-MIT License — free to use in internal QA and automation workflows.
+MIT — free to use in internal QA and automation workflows.
 
 ---
 
 ## Author
 
-**Stanislav Nikolaievskyi**  
-[github.com/stasn](https://github.com/stasn)
+**Stanislav Nikolaievskyi** · [github.com/Astralborn](https://github.com/Astralborn)
 
-Developed as a portfolio project demonstrating desktop application architecture with Python and PySide6.
+*Portfolio project demonstrating desktop application architecture with Python and PySide6.*

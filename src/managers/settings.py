@@ -42,7 +42,6 @@ class SettingsManager:
             "connection": {
                 "last_ip": "",
                 "last_user": "",
-                "remember_password": False,
                 "last_simple_format": False,
             },
             "ui": {
@@ -71,12 +70,6 @@ class SettingsManager:
 
     def set_last_user(self, user: str) -> None:
         self.settings.setdefault("connection", {})["last_user"] = user
-
-    def get_remember_password(self) -> bool:
-        return self.settings.get("connection", {}).get("remember_password", False)
-
-    def set_remember_password(self, remember: bool) -> None:
-        self.settings.setdefault("connection", {})["remember_password"] = remember
 
     def get_last_simple_format(self) -> bool:
         return self.settings.get("connection", {}).get("last_simple_format", False)
