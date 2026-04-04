@@ -11,17 +11,18 @@ _logger = get_logger("preset_manager")
 
 
 class PresetManager:
-    def __init__(self) -> None:
+    def __init__(self, presets_file: Path | None = None) -> None:
+        self._file = presets_file if presets_file is not None else PRESETS_FILE
         self.presets: list[dict[str, Any]] = []
         self.load_presets()
 
     def load_presets(self) -> None:
         """Load presets from JSON file."""
-        if not PRESETS_FILE.exists():
+        if not self._file.exists():
             self.presets = []
             return
         try:
-            with PRESETS_FILE.open("r", encoding="utf-8") as f:
+            with self._file.open("r", encoding="utf-8") as f:
                 self.presets = json.load(f)
         except Exception as exc:
             _logger.error("Failed to load presets", error=str(exc))
@@ -30,7 +31,7 @@ class PresetManager:
     def save_presets(self) -> None:
         """Persist presets to disk."""
         try:
-            with PRESETS_FILE.open("w", encoding="utf-8") as f:
+            with self._file.open("w", encoding="utf-8") as f:
                 json.dump(self.presets, f, indent=2, ensure_ascii=False)
         except Exception as exc:
             _logger.error("Failed to save presets", error=str(exc))

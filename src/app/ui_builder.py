@@ -130,12 +130,6 @@ def _field_label(text: str) -> QLabel:
     return lbl
 
 
-def _sep() -> QFrame:
-    line = QFrame()
-    line.setFrameShape(QFrame.HLine)
-    line.setStyleSheet(f"background-color: {BORDER}; max-height: 1px; border: none;")
-    return line
-
 
 class UIBuilderMixin:
 

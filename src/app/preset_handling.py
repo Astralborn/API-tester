@@ -20,7 +20,7 @@ class PresetHandlingMixin:
         is_unhappy = "/unhappy/" in json_file.replace("\\", "/").lower()
         if (mode == "happy" and is_unhappy) or (mode == "unhappy" and not is_unhappy):
             return False
-        return search in name.lower()
+        return search.lower() in name.lower()
 
     def update_presets_list(self) -> None:
         search = self.preset_search.text().lower()
