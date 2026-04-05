@@ -5,16 +5,17 @@
 ![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
 ![PySide6](https://img.shields.io/badge/UI-PySide6-41CD52?style=flat-square&logo=qt&logoColor=white)
 ![Tests](https://img.shields.io/badge/pytest-passing-0A9EDC?style=flat-square&logo=pytest&logoColor=white)
+![Mypy](https://img.shields.io/badge/mypy-checked-2A6DB5?style=flat-square&logo=python&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square&logo=opensourceinitiative&logoColor=white)
 ![Platform](https://img.shields.io/badge/Windows%20%2B%20WSL-0078D4?style=flat-square&logo=windows&logoColor=white)
 
 </div>
- 
+
 ---
 
 > **Desktop QA utility for testing REST API endpoints on embedded network devices.**
 > Sends authenticated HTTP requests, runs batch preset sequences, and logs every response — all from a clean two-panel UI.
-> Built with **PySide6** · Async via **QThread** · **HTTP Digest auth** · **100% module coverage**
+> Built with **PySide6** · Async via **QThread** · **HTTP Digest auth** · **235 tests · mypy clean**
 
 ---
 
@@ -27,7 +28,8 @@
 | **Architecture** | Mixin composition + DI container |
 | **Auth** | HTTP Digest (self-signed certificate devices) |
 | **Concurrency** | Non-blocking QThread workers, cancellable mid-run |
-| **Test suite** | pytest · 100% coverage per runtime module |
+| **Type checking** | mypy — 0 errors |
+| **Test suite** | pytest — 235 tests, 100% module coverage |
 | **Logging** | Plain text + rotating file + structured JSONL |
 | **Platforms** | Windows (primary), Linux, macOS |
 
@@ -181,17 +183,26 @@ Status Code: 200
 {"contacts": [...]}
 ```
 
+Three simultaneous output streams are written for every event:
+
+| Stream | File | Level |
+|:---|:---|:---|
+| Plain text | `logs/<name>.log` | DEBUG+ |
+| Structured | `logs/<name>_structured.jsonl` | DEBUG+ |
+| Errors only | `logs/<name>_errors.log` | ERROR+ |
+
 ---
 
 ## Testing
 
 ```bash
 pip install -r requirements.txt
-python -m pytest tests                        # all tests, ~5 s
-python -m pytest tests --cov=src              # with coverage report
+python -m pytest tests                # all tests
+python -m pytest tests --cov=src      # with coverage report
+python -m mypy src                    # type checking
 ```
 
-**All tests passing · 100% coverage per runtime module**
+**235 tests passing · 100% coverage per runtime module · 0 mypy errors**
 
 | Layer | What's tested |
 |:---|:---|
@@ -206,9 +217,11 @@ Every runtime application module sits at **100% coverage**. The only excluded fi
 
 ## Architecture Notes
 
-The app is assembled via **mixin composition** — `ApiTestApp` inherits from four focused mixins rather than one monolithic class. Dependencies are injected through a lightweight `DIContainer` using `Protocol`-based interfaces, making individual components independently testable.
+The app is assembled via **mixin composition** — `ApiTestApp` inherits from four focused mixins rather than one monolithic class. Each mixin uses a `_*Protocol` stub (visible only to mypy via `TYPE_CHECKING`) to declare its expected attributes, giving full static type coverage without runtime overhead.
 
-Logging uses a custom `StructuredLogger` that writes plain text, rotating file, and structured JSONL output simultaneously.
+Dependencies are injected through a lightweight `DIContainer` using `Protocol`-based interfaces, making every component independently testable without touching the UI.
+
+Logging uses a custom `StructuredLogger` that writes plain text, rotating file, and structured JSONL output simultaneously — one logger call produces three output streams.
 
 ---
 

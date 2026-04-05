@@ -1,20 +1,27 @@
-"""Dialogs for API Test Tool — Modern design."""
+"""Dialogs for API Test Tool — modern design."""
 from __future__ import annotations
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QListWidget,
-    QPushButton, QCheckBox, QListWidgetItem, QLabel, QFrame,
+    QDialog,
+    QVBoxLayout,
+    QHBoxLayout,
+    QListWidget,
+    QPushButton,
+    QCheckBox,
+    QListWidgetItem,
+    QLabel,
+    QFrame,
 )
 
-_CARD_BG     = "#FFFFFF"
-_BG          = "#FAFAFA"
-_BORDER      = "#E2E2E8"
-_TEXT        = "#0F0F11"
-_MUTED       = "#6B7280"
-_ACCENT      = "#2563EB"
-_ACCENT_HVR  = "#1D4ED8"
-_BTN_SEC     = "#FFFFFF"
+_CARD_BG = "#FFFFFF"
+_BG = "#FAFAFA"
+_BORDER = "#E2E2E8"
+_TEXT = "#0F0F11"
+_MUTED = "#6B7280"
+_ACCENT = "#2563EB"
+_ACCENT_HVR = "#1D4ED8"
+_BTN_SEC = "#FFFFFF"
 _BTN_SEC_HVR = "#F0F0F2"
 
 _DIALOG_QSS = f"""
@@ -68,7 +75,13 @@ QPushButton[secondary="true"]:hover {{
 
 
 class MultiSelectDialog(QDialog):
+    """Dialog that lets the user choose multiple presets to run sequentially."""
+
     def __init__(self, items: list[str]) -> None:
+        """Initialise the dialog and populate it with *items*.
+
+        :param items: List of preset names to display in the list widget.
+        """
         super().__init__()
         self.setWindowTitle("Run Multiple Presets")
         self.setMinimumSize(480, 560)
@@ -87,7 +100,7 @@ class MultiSelectDialog(QDialog):
         root.addWidget(subtitle)
 
         sep = QFrame()
-        sep.setFrameShape(QFrame.HLine)
+        sep.setFrameShape(QFrame.Shape.HLine)
         sep.setStyleSheet(f"background-color: {_BORDER}; max-height: 1px; border: none;")
         root.addWidget(sep)
 
@@ -96,7 +109,7 @@ class MultiSelectDialog(QDialog):
         root.addWidget(self.select_all_cb)
 
         self.list_widget = QListWidget()
-        self.list_widget.setSelectionMode(QListWidget.MultiSelection)
+        self.list_widget.setSelectionMode(QListWidget.SelectionMode.MultiSelection)
         for item in items:
             self.list_widget.addItem(QListWidgetItem(item))
         root.addWidget(self.list_widget, 1)
@@ -119,10 +132,15 @@ class MultiSelectDialog(QDialog):
         root.addLayout(btn_row)
 
     def toggle_select_all(self, state: int) -> None:
-        checked = state == Qt.Checked
+        """Select or deselect all items based on the *Select all* checkbox.
+
+        :param state: Qt check state integer (``Qt.Checked`` selects all).
+        """
+        checked = state == Qt.CheckState.Checked
         for i in range(self.list_widget.count()):
             self.list_widget.item(i).setSelected(checked)
 
     def accept_selection(self) -> None:
+        """Store the selected item names and close the dialog with accept."""
         self.selected = [item.text() for item in self.list_widget.selectedItems()]
         self.accept()

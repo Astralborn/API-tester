@@ -10,8 +10,8 @@ from config.di_container import get_container
 def create_light_palette() -> QPalette:
     """Return a simple optional light palette."""
     palette = QPalette()
-    palette.setColor(QPalette.Window, QColor(245, 245, 245))
-    palette.setColor(QPalette.Base, QColor(255, 255, 255))
+    palette.setColor(QPalette.ColorRole.Window, QColor(245, 245, 245))
+    palette.setColor(QPalette.ColorRole.Base, QColor(255, 255, 255))
     return palette
 
 

@@ -1,12 +1,35 @@
 """Settings handling mixin for API Test Tool."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from PySide6.QtCore import QTimer
+from PySide6.QtWidgets import QCheckBox, QComboBox, QLineEdit, QWidget
+
+if TYPE_CHECKING:
+    from config.di_container import SettingsManagerProtocol
+
+    class _SettingsHandlingProtocol(QWidget):
+        """Typed view of the fully-assembled host class, for use in method stubs."""
+
+        ip_edit: QLineEdit
+        user_edit: QLineEdit
+        pass_edit: QLineEdit
+        simple_check: QCheckBox
+        test_mode_combo: QComboBox
+        json_type_combo: QComboBox
+        endpoint_combo: QComboBox
+        json_combo: QComboBox
+        settings: SettingsManagerProtocol
+else:
+    _SettingsHandlingProtocol = object
 
 
-class SettingsHandlingMixin:
+class SettingsHandlingMixin(_SettingsHandlingProtocol):  # type: ignore[misc]
+    """Mixin that loads, saves, and auto-saves application settings."""
 
-    def load_settings(self) -> None:
+    def load_settings(self: _SettingsHandlingProtocol) -> None:  # type: ignore[misc]
+        """Restore all persisted settings into the UI widgets."""
         self.ip_edit.setText(self.settings.get_last_ip())
         self.user_edit.setText(self.settings.get_last_user())
         self.simple_check.setChecked(self.settings.get_last_simple_format())
@@ -23,7 +46,8 @@ class SettingsHandlingMixin:
         if geometry:
             self.restoreGeometry(bytes.fromhex(geometry))
 
-    def save_settings(self) -> None:
+    def save_settings(self: _SettingsHandlingProtocol) -> None:  # type: ignore[misc]
+        """Collect all current UI values and persist them to disk."""
         self.settings.set_last_ip(self.ip_edit.text())
         self.settings.set_last_user(self.user_edit.text())
         self.settings.set_last_simple_format(self.simple_check.isChecked())
@@ -35,13 +59,15 @@ class SettingsHandlingMixin:
         self.settings.set_window_geometry(geometry)
         self.settings.save_settings()
 
-    def _auto_save_connection_settings(self) -> None:
+    def _auto_save_connection_settings(self: _SettingsHandlingProtocol) -> None:  # type: ignore[misc]
+        """Persist connection-related fields whenever they change."""
         self.settings.set_last_ip(self.ip_edit.text())
         self.settings.set_last_user(self.user_edit.text())
         self.settings.set_last_simple_format(self.simple_check.isChecked())
         self.settings.save_settings()
 
-    def _auto_save_ui_settings(self) -> None:
+    def _auto_save_ui_settings(self: _SettingsHandlingProtocol) -> None:  # type: ignore[misc]
+        """Persist UI-state fields whenever they change."""
         self.settings.set_last_test_mode(self.test_mode_combo.currentText())
         self.settings.set_last_json_type(self.json_type_combo.currentText())
         self.settings.set_last_endpoint(self.endpoint_combo.currentText())
@@ -49,11 +75,13 @@ class SettingsHandlingMixin:
         self.settings.save_settings()
 
     def _setup_geometry_auto_save(self) -> None:
+        """Create a single-shot timer used to debounce geometry saves."""
         self._geometry_timer = QTimer()
         self._geometry_timer.setSingleShot(True)
         self._geometry_timer.timeout.connect(self._auto_save_geometry)
 
-    def _auto_save_geometry(self) -> None:
+    def _auto_save_geometry(self: _SettingsHandlingProtocol) -> None:  # type: ignore[misc]
+        """Write the current window geometry to settings."""
         geometry = self.saveGeometry().data().hex()
         self.settings.set_window_geometry(geometry)
         self.settings.save_settings()

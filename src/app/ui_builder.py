@@ -1,31 +1,42 @@
-"""UI builder module for API Test Tool — Modern two-panel design."""
+"""UI builder module for API Test Tool — modern two-panel design."""
 from __future__ import annotations
 
 import itertools
+from typing import TYPE_CHECKING
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPalette, QColor
 from PySide6.QtWidgets import (
-    QApplication, QVBoxLayout, QHBoxLayout,
-    QComboBox, QLineEdit, QPushButton, QCheckBox, QTextEdit,
-    QLabel, QWidget, QSizePolicy, QFrame, QSplitter,
+    QApplication,
+    QVBoxLayout,
+    QHBoxLayout,
+    QComboBox,
+    QLineEdit,
+    QPushButton,
+    QCheckBox,
+    QTextEdit,
+    QLabel,
+    QWidget,
+    QSizePolicy,
+    QFrame,
+    QSplitter,
 )
 
 from config.constants import API_ENDPOINTS
 
-BG           = "#FAFAFA"
-SIDEBAR_BG   = "#F0F0F2"
-CARD_BG      = "#FFFFFF"
-BORDER       = "#E2E2E8"
+BG = "#FAFAFA"
+SIDEBAR_BG = "#F0F0F2"
+CARD_BG = "#FFFFFF"
+BORDER = "#E2E2E8"
 BORDER_FOCUS = "#2563EB"
 TEXT_PRIMARY = "#0F0F11"
-TEXT_MUTED   = "#6B7280"
-ACCENT       = "#2563EB"
+TEXT_MUTED = "#6B7280"
+ACCENT = "#2563EB"
 ACCENT_HOVER = "#1D4ED8"
-BTN_BG       = "#FFFFFF"
-BTN_HVR      = "#F0F0F2"
-INPUT_BG     = "#FFFFFF"
-DANGER       = "#DC2626"
+BTN_BG = "#FFFFFF"
+BTN_HVR = "#F0F0F2"
+INPUT_BG = "#FFFFFF"
+DANGER = "#DC2626"
 
 _GLOBAL_QSS = f"""
 QWidget {{
@@ -97,7 +108,13 @@ _card_counter = itertools.count(1)
 
 
 def _card(layout_cls=QVBoxLayout, spacing: int = 7, margins=(12, 10, 12, 10)):
-    """Return a bordered card widget with a unique object name."""
+    """Return a bordered card widget with a unique object name.
+
+    :param layout_cls: Layout class to apply to the card (default: QVBoxLayout).
+    :param spacing: Pixel spacing between child widgets.
+    :param margins: Content margins as (left, top, right, bottom).
+    :returns: A ``(QWidget, layout)`` tuple ready to receive child widgets.
+    """
     name = f"card_{next(_card_counter)}"
     frame = QWidget()
     frame.setObjectName(name)
@@ -116,6 +133,7 @@ def _card(layout_cls=QVBoxLayout, spacing: int = 7, margins=(12, 10, 12, 10)):
 
 
 def _section_label(text: str) -> QLabel:
+    """Return a small uppercase section-header label."""
     lbl = QLabel(text.upper())
     lbl.setStyleSheet(
         "color: #9CA3AF; font-size: 9px; font-weight: 700; "
@@ -125,34 +143,77 @@ def _section_label(text: str) -> QLabel:
 
 
 def _field_label(text: str) -> QLabel:
+    """Return a bold field-name label."""
     lbl = QLabel(text)
     lbl.setStyleSheet("font-weight: 600; border: none; background: transparent; padding: 0;")
     return lbl
 
 
+if TYPE_CHECKING:
+    class _UIBuilderProtocol(QWidget):
+        """Typed view of the fully-assembled host class, for use in method stubs."""
+
+        # Widgets assigned inside build_ui
+        ip_edit: QLineEdit
+        user_edit: QLineEdit
+        pass_edit: QLineEdit
+        simple_check: QCheckBox
+        test_mode_combo: QComboBox
+        preset_search: QLineEdit
+        preset_combo: QComboBox
+        endpoint_combo: QComboBox
+        json_type_combo: QComboBox
+        json_combo: QComboBox
+        btn_send: QPushButton
+        btn_multi: QPushButton
+        btn_cancel: QPushButton
+        btn_clear: QPushButton
+        response: QTextEdit
+        status_label: QLabel
+        status: QLabel
+
+
+        # Cross-mixin callbacks
+        def _auto_save_connection_settings(self) -> None: ...
+        def _auto_save_ui_settings(self) -> None: ...
+        def update_presets_list(self) -> None: ...
+        def on_preset_changed(self, name: str) -> None: ...
+        def load_preset(self) -> None: ...
+        def save_preset(self) -> None: ...
+        def send_request(self) -> None: ...
+        def run_multiple(self) -> None: ...
+        def cancel_all_requests(self) -> None: ...
+        def clear_response(self) -> None: ...
+else:
+    _UIBuilderProtocol = object
+
 
 class UIBuilderMixin:
+    """Mixin that applies the application theme and constructs the two-panel UI."""
 
-    def apply_light_theme(self) -> None:
+    def apply_light_theme(self: _UIBuilderProtocol) -> None:  # type: ignore[misc]
+        """Set the Qt palette and global stylesheet to the light theme."""
         palette = QPalette()
-        palette.setColor(QPalette.Window,          QColor(SIDEBAR_BG))
-        palette.setColor(QPalette.Base,            QColor(CARD_BG))
-        palette.setColor(QPalette.AlternateBase,   QColor(BG))
-        palette.setColor(QPalette.Text,            QColor(TEXT_PRIMARY))
-        palette.setColor(QPalette.WindowText,      QColor(TEXT_PRIMARY))
-        palette.setColor(QPalette.Button,          QColor(BTN_BG))
-        palette.setColor(QPalette.ButtonText,      QColor(TEXT_PRIMARY))
-        palette.setColor(QPalette.Highlight,       QColor(ACCENT))
-        palette.setColor(QPalette.HighlightedText, QColor("#ffffff"))
+        palette.setColor(QPalette.ColorRole.Window,          QColor(SIDEBAR_BG))
+        palette.setColor(QPalette.ColorRole.Base,            QColor(CARD_BG))
+        palette.setColor(QPalette.ColorRole.AlternateBase,   QColor(BG))
+        palette.setColor(QPalette.ColorRole.Text,            QColor(TEXT_PRIMARY))
+        palette.setColor(QPalette.ColorRole.WindowText,      QColor(TEXT_PRIMARY))
+        palette.setColor(QPalette.ColorRole.Button,          QColor(BTN_BG))
+        palette.setColor(QPalette.ColorRole.ButtonText,      QColor(TEXT_PRIMARY))
+        palette.setColor(QPalette.ColorRole.Highlight,       QColor(ACCENT))
+        palette.setColor(QPalette.ColorRole.HighlightedText, QColor("#ffffff"))
         QApplication.setPalette(palette)
         self.setStyleSheet(_GLOBAL_QSS)
 
-    def build_ui(self) -> None:
-        root = QHBoxLayout(self)
+    def build_ui(self: _UIBuilderProtocol) -> None:  # type: ignore[misc]
+        """Construct and lay out all widgets in the main window."""
+        root = QHBoxLayout()
+        self.setLayout(root)
         root.setContentsMargins(0, 0, 0, 0)
         root.setSpacing(0)
 
-        splitter = QSplitter(Qt.Horizontal)
+        splitter = QSplitter(Qt.Orientation.Horizontal)
         splitter.setChildrenCollapsible(False)
         root.addWidget(splitter)
 
@@ -202,7 +263,7 @@ class UIBuilderMixin:
         pass_col.addWidget(_field_label("Password"))
         self.pass_edit = QLineEdit()
         self.pass_edit.setPlaceholderText("••••••")
-        self.pass_edit.setEchoMode(QLineEdit.Password)
+        self.pass_edit.setEchoMode(QLineEdit.EchoMode.Password)
         pass_col.addWidget(self.pass_edit)
         creds_row.addLayout(user_col)
         creds_row.addLayout(pass_col)
@@ -268,9 +329,11 @@ class UIBuilderMixin:
         req_lay.addWidget(_field_label("JSON File"))
         self.json_combo = QComboBox()
         self.json_combo.addItem("(none)")
-        self.json_combo.setSizeAdjustPolicy(QComboBox.AdjustToMinimumContentsLengthWithIcon)
+        self.json_combo.setSizeAdjustPolicy(
+            QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon
+        )
         # Right-align text so the filename end is visible instead of the folder prefix
-        self.json_combo.setLayoutDirection(Qt.RightToLeft)
+        self.json_combo.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
         # Show full path as tooltip on hover
         self.json_combo.currentTextChanged.connect(
             lambda t: self.json_combo.setToolTip(t)
@@ -350,8 +413,10 @@ class UIBuilderMixin:
         right_layout.addWidget(toolbar)
 
         self.response = QTextEdit(readOnly=True)
-        self.response.setLineWrapMode(QTextEdit.NoWrap)
-        self.response.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.response.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
+        self.response.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
         right_layout.addWidget(self.response, 1)
 
         splitter.addWidget(right)

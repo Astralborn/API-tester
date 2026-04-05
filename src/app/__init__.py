@@ -8,8 +8,14 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget
 
 from config.constants import resource_path
-from config.di_container import DIContainer, PresetManagerProtocol, RequestManagerProtocol, SettingsManagerProtocol
+from config.di_container import (
+    DIContainer,
+    PresetManagerProtocol,
+    RequestManagerProtocol,
+    SettingsManagerProtocol,
+)
 from config.logging_system import get_logger
+from typing import cast
 
 from app.ui_builder import UIBuilderMixin
 from app.request_handling import RequestHandlingMixin
@@ -20,7 +26,7 @@ if TYPE_CHECKING:
     from managers.requests_manager import RequestWorker
 
 
-class ApiTestApp(
+class ApiTestApp(  # type: ignore[misc]
     QWidget,
     UIBuilderMixin,
     RequestHandlingMixin,
@@ -36,21 +42,33 @@ class ApiTestApp(
         settings_manager: SettingsManagerProtocol | None = None,
         container: DIContainer | None = None,
     ) -> None:
+        """Initialise the application, resolve dependencies, and build the UI.
+
+        :param preset_manager: Optional preset manager override.
+        :param request_manager: Optional request manager override.
+        :param settings_manager: Optional settings manager override.
+        :param container: Optional DI container; used when no explicit managers
+            are passed.  Falls back to direct instantiation when omitted.
+        """
         super().__init__()
 
+        self.container: DIContainer | None = container
+        self.presets: PresetManagerProtocol
+        self.requests: RequestManagerProtocol
+        self.settings: SettingsManagerProtocol
+
         if container:
-            self.container = container
-            self.presets  = preset_manager  or container.get("preset_manager")
-            self.requests = request_manager or container.get("request_manager")
-            self.settings = settings_manager or container.get("settings_manager")
+            self.presets = cast(PresetManagerProtocol, preset_manager or container.get("preset_manager"))
+            self.requests = cast(RequestManagerProtocol, request_manager or container.get("request_manager"))
+            self.settings = cast(SettingsManagerProtocol, settings_manager or container.get("settings_manager"))
         else:
             from managers.presets import PresetManager
             from managers.requests_manager import RequestManager
             from managers.settings import SettingsManager
-            self.presets  = preset_manager  or PresetManager()
-            self.requests = request_manager or RequestManager()
-            self.settings = settings_manager or SettingsManager()
-            self.container = None
+
+            self.presets = cast(PresetManagerProtocol, preset_manager or PresetManager())
+            self.requests = cast(RequestManagerProtocol, request_manager or RequestManager())
+            self.settings = cast(SettingsManagerProtocol, settings_manager or SettingsManager())
 
         self.logger = get_logger("api_test_app")
         self.logger.log_application_event(
@@ -75,6 +93,7 @@ class ApiTestApp(
         self._setup_geometry_auto_save()
 
     def closeEvent(self, event) -> None:
+        """Save settings and cancel pending requests before closing."""
         self.save_settings()
         if self.active_requests:
             self.cancel_all_requests()

@@ -1,3 +1,4 @@
+"""HTTP request worker and manager for API Test Tool."""
 from __future__ import annotations
 
 import json
@@ -7,6 +8,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 import requests
+import urllib3
 from PySide6.QtCore import QThread, Signal
 
 from config.constants import JSON_FOLDER, LOGS_FOLDER
@@ -19,20 +21,33 @@ _logger = get_logger("request_manager")
 _FILENAME_MAX_LEN = 64
 
 
-# ================= Helpers =================
+# ── Helpers ───────────────────────────────────────────────────────────────────
 
 def make_safe_filename(name: str) -> str:
-    """Replace unsafe filename characters with underscore, capped at 64 chars."""
+    """Replace unsafe filename characters with underscores, capped at 64 chars.
+
+    :param name: Raw string to sanitise.
+    :returns: A filesystem-safe string of at most ``_FILENAME_MAX_LEN`` characters.
+    """
     return re.sub(r"[^A-Za-z0-9._-]", "_", name)[:_FILENAME_MAX_LEN]
 
 
 def _timestamp() -> str:
+    """Return the current date/time formatted as ``YYYYMMDD_HHMMSS``."""
     return datetime.now().strftime("%Y%m%d_%H%M%S")
 
 
-# ================= Worker Thread =================
+# ── Worker Thread ─────────────────────────────────────────────────────────────
 
 class RequestWorker(QThread):
+    """QThread subclass that executes a single HTTP POST and emits the result.
+
+    Signals:
+        finished (str, str, str): Emitted on completion with
+            ``(response_text, preset_name, tag)`` where *tag* is one of
+            ``"ok"``, ``"warn"``, or ``"err"``.
+    """
+
     finished = Signal(str, str, str)  # text, preset_name, tag
 
     def __init__(
@@ -47,6 +62,17 @@ class RequestWorker(QThread):
         json_type: str = "normal",
         log_file: Path | None = None,
     ) -> None:
+        """Initialise the worker with all parameters needed for the request.
+
+        :param url: Full target URL including scheme and endpoint.
+        :param user: HTTP Digest authentication username.
+        :param password: Password as a mutable bytearray; zeroed after use.
+        :param payload: JSON-serialisable request body.
+        :param preset_name: Human-readable name used in log output.
+        :param json_type: Payload format identifier (``"normal"``, ``"google"``,
+            or ``"rpc"``).
+        :param log_file: Path to the log file; auto-generated when ``None``.
+        """
         super().__init__()
         self.url = url
         self.user = user
@@ -58,7 +84,7 @@ class RequestWorker(QThread):
         self.logger = get_logger("request_worker")
 
     def run(self) -> None:
-        """Execute HTTP request and emit result."""
+        """Execute the HTTP request and emit the ``finished`` signal."""
         self._ensure_log_file()
         self.logger.info(
             f"Starting request to {self.url}",
@@ -93,7 +119,9 @@ class RequestWorker(QThread):
             )
             tag = "ok" if response.status_code == 200 else "warn"
             self.logger.log_request(
-                "POST", self.url, response.status_code,
+                "POST",
+                self.url,
+                response.status_code,
                 response.elapsed.total_seconds(),
                 preset_name=self.preset_name,
                 response_size=len(response.text),
@@ -115,12 +143,18 @@ class RequestWorker(QThread):
         self.finished.emit(text, self.preset_name, tag)
 
     def _ensure_log_file(self) -> None:
+        """Assign a default log-file path if one was not provided."""
         if self.log_file:
             return
         safe_name = make_safe_filename(self.preset_name or "request")
         self.log_file = LOGS_FOLDER / f"log_{safe_name}_{_timestamp()}.log"
 
     def _write_log(self, text: str, tag: str) -> None:
+        """Append *text* and *tag* to the worker's log file.
+
+        :param text: Full response text to persist.
+        :param tag: Response tag (``"ok"``, ``"warn"``, or ``"err"``).
+        """
         if not self.log_file:
             return
         try:
@@ -130,20 +164,23 @@ class RequestWorker(QThread):
                 f.write(f"\n--- {datetime.now():%Y-%m-%d %H:%M:%S} ---\n")
                 f.write(f"Tag: {tag}\n{text}\n")
         except Exception as exc:
-            self.logger.error("Failed to write log file",
-                              file=str(self.log_file), error=str(exc))
+            self.logger.error(
+                "Failed to write log file",
+                file=str(self.log_file),
+                error=str(exc),
+            )
 
 
-# ================= Request Manager =================
+# ── Request Manager ───────────────────────────────────────────────────────────
 
 class RequestManager:
+    """Manages :class:`RequestWorker` instances and builds request parameters."""
+
     def __init__(self) -> None:
         self.workers: list[RequestWorker] = []
         # Suppress urllib3 warnings that would otherwise fire on every request
         # because target devices use self-signed certificates (verify=False).
-        requests.packages.urllib3.disable_warnings(
-            requests.packages.urllib3.exceptions.InsecureRequestWarning
-        )
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     def build_request(
         self,
@@ -152,6 +189,16 @@ class RequestManager:
         json_file: str | None,
         simple_format: bool = False,
     ) -> tuple[str, dict[str, Any]]:
+        """Construct the target URL and load the JSON payload from disk.
+
+        :param ip: Device IP address (without scheme).
+        :param endpoint: API endpoint path (e.g. ``"/api/call/GetContacts"``).
+        :param json_file: Relative path to the JSON payload file, or ``None`` /
+            ``"(none)"`` for an empty payload.
+        :param simple_format: When True, appends ``?format=simple`` (or
+            ``&format=simple``) to the URL.
+        :returns: A ``(url, payload)`` tuple ready to pass to :class:`RequestWorker`.
+        """
         url = f"http://{ip}{endpoint}"
         if simple_format:
             url += "&format=simple" if "?" in url else "?format=simple"
@@ -162,15 +209,23 @@ class RequestManager:
                 with (JSON_FOLDER / json_file.strip()).open("r", encoding="utf-8") as f:
                     payload = json.load(f)
             except Exception as exc:
-                _logger.error(f"Failed to load JSON file '{json_file}'",
-                              file=json_file, error=str(exc))
+                _logger.error(
+                    f"Failed to load JSON file '{json_file}'",
+                    file=json_file,
+                    error=str(exc),
+                )
         return url, payload
 
     def start_new_log(self, preset_name: str) -> Path:
+        """Create and return a new timestamped log file path.
+
+        :param preset_name: Used as the filename prefix (sanitised automatically).
+        """
         safe_name = make_safe_filename(preset_name or "request")
         return LOGS_FOLDER / f"log_{safe_name}_{_timestamp()}.log"
 
     def _remove_worker(self, worker: RequestWorker) -> None:
+        """Remove *worker* from the active worker list (safe if already absent)."""
         try:
             self.workers.remove(worker)
         except ValueError:
@@ -189,10 +244,29 @@ class RequestManager:
         preset_name: str = "",
         log_file: Path | None = None,
     ) -> RequestWorker:
+        """Build, start, and return a :class:`RequestWorker` for the given parameters.
+
+        :param ip: Device IP address.
+        :param user: HTTP Digest authentication username.
+        :param password: Password as a mutable bytearray.
+        :param endpoint: API endpoint path.
+        :param json_file: Relative path to the JSON payload file.
+        :param simple_format: Append ``format=simple`` query parameter when True.
+        :param json_type: Payload format identifier.
+        :param callback: Called with ``(text, preset_name, tag)`` on completion.
+        :param preset_name: Human-readable name used in log output.
+        :param log_file: Pre-created log file path for multi-preset runs.
+        :returns: The started :class:`RequestWorker` instance.
+        """
         url, payload = self.build_request(ip, endpoint, json_file, simple_format)
         worker = RequestWorker(
-            url=url, user=user, password=password, payload=payload,
-            preset_name=preset_name, json_type=json_type, log_file=log_file,
+            url=url,
+            user=user,
+            password=password,
+            payload=payload,
+            preset_name=preset_name,
+            json_type=json_type,
+            log_file=log_file,
         )
         worker.finished.connect(callback)
         worker.finished.connect(lambda *_: self._remove_worker(worker))
