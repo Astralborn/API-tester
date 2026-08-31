@@ -26,6 +26,10 @@ logs/
 *.log
 *.jsonl
 
+# ── Generated payloads ────────────────────────────────────────────────────────
+src/config/json_configs/
+src/config/presets.json
+
 # ── Settings / state ──────────────────────────────────────────────────────────
 # User-specific settings are generated at runtime
 src/settings.json
