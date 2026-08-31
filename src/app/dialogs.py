@@ -137,7 +137,7 @@ class MultiSelectDialog(QDialog):
 
         :param state: Qt check state integer (``Qt.Checked`` selects all).
         """
-        checked = state == Qt.CheckState.Checked
+        checked = Qt.CheckState(state) == Qt.CheckState.Checked
         for i in range(self.list_widget.count()):
             self.list_widget.item(i).setSelected(checked)
 

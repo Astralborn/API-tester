@@ -192,7 +192,8 @@ class RequestHandlingMixin(_RequestHandlingProtocol):
         body_style = (
             "font-family: Consolas, monospace; font-size: 12px; line-height: 1.5; color: #333333;"
         )
-        header = f'<div style="{header_style}">{preset_name or "Request"}</div><br>'
+        safe_name = self._escape_html(preset_name or "Request")
+        header = f'<div style="{header_style}">{safe_name}</div><br>'
         body = self._escape_html(text).replace("\n", "<br>")
         return f'{separator}<div style="{body_style}">{header}{body}</div>'
 

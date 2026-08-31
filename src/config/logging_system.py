@@ -196,9 +196,12 @@ class ColoredFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         """Colour the level name then delegate to the standard formatter."""
+        original_levelname = record.levelname
         color = self.COLORS.get(record.levelname, "")
         record.levelname = f"{color}{record.levelname}{self.RESET}"
-        return super().format(record)
+        result = super().format(record)
+        record.levelname = original_levelname
+        return result
 
 
 class JsonFormatter(logging.Formatter):
